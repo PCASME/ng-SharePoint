@@ -9,9 +9,9 @@
  */
 
 
-angular.module('ngSharePoint').factory('SPUtils', 
+angular.module('ngSharePoint').factory('SPUtils',
 
-    ['SPConfig', '$q', '$http', '$injector', 'ODataParserProvider', 
+    ['SPConfig', '$q', '$http', '$injector', 'ODataParserProvider',
 
     function SPUtils_Factory(SPConfig, $q, $http, $injector, ODataParserProvider) {
 
@@ -38,6 +38,12 @@ angular.module('ngSharePoint').factory('SPUtils',
 
                 var deferred = $q.defer();
                 var self = this;
+
+                if (window.SP === undefined) {
+
+                    // ng-SharePoint is running outside of SharePoint site
+                    isSharePointReady = true;
+                }
 
                 if (isSharePointReady) {
 
@@ -86,7 +92,7 @@ angular.module('ngSharePoint').factory('SPUtils',
 
                                     loadResourcePromises.push(self.loadResourceFile(filename));
                                 });
-                                
+
                             }
 
                             // Resolve resource promises
@@ -140,7 +146,7 @@ angular.module('ngSharePoint').factory('SPUtils',
                         data = data.replace(/e - mail|e-mail/g, 'email');
                         data = data.replace(/e - Mail|e-Mail/g, 'email');
                         data = data.replace(/tty - TDD|tty-TDD/g, 'tty_TDD');
-                        
+
                         try {
                             var _eval = eval; // Fix jshint warning: eval can be harmful.
                             _eval(data);
@@ -220,7 +226,7 @@ angular.module('ngSharePoint').factory('SPUtils',
                     }
 
                     if (queryInfo.pagingInfo) {
-                        var position = new SP.ListItemCollectionPosition(); 
+                        var position = new SP.ListItemCollectionPosition();
                         position.set_pagingInfo(queryInfo.pagingInfo);
                         camlQuery.set_listItemCollectionPosition(position);
                     }
@@ -316,7 +322,7 @@ angular.module('ngSharePoint').factory('SPUtils',
             },
 
 
-            getUserId: function(loginName) {
+            getUserInfoByLoginName: function(loginName) {
 
                 var self = this;
                 var deferred = $q.defer();
@@ -326,7 +332,8 @@ angular.module('ngSharePoint').factory('SPUtils',
                 ctx.load(user);
                 ctx.executeQueryAsync(function() {
 
-                    deferred.resolve(user.get_id());
+                    var objectData = user.get_objectData();
+                    deferred.resolve(objectData.get_properties());
 
                 }, function(sender, args) {
 
@@ -361,7 +368,7 @@ angular.module('ngSharePoint').factory('SPUtils',
                     });
                 });
 
-                return deferred.promise;            
+                return deferred.promise;
             },
 
 
@@ -371,16 +378,16 @@ angular.module('ngSharePoint').factory('SPUtils',
 
                 if (window.DOMParser) {
 
-                    var parser = new window.DOMParser();          
+                    var parser = new window.DOMParser();
                     xmlDoc = parser.parseFromString(xmlDocStr, "text/xml");
 
                 } else {
-                
+
                     // IE :(
                     if(xmlDocStr.indexOf("<?") === 0) {
                         xmlDocStr = xmlDocStr.substr(xmlDocStr.indexOf("?>") + 2);
                     }
-                
+
                     xmlDoc = new ActiveXObject("Microsoft.XMLDOM");
                     xmlDoc.async = "false";
                     xmlDoc.loadXML(xmlDocStr);
@@ -410,9 +417,14 @@ angular.module('ngSharePoint').factory('SPUtils',
                     });
 
                     if (form !== void 0) {
-                        var regionalSettingsSelect = form.querySelector('#ctl00_PlaceHolderMain_ctl02_ctl01_DdlwebLCID');
-                        var selectedOption = regionalSettingsSelect.querySelector('[selected]');
-                        lcid = selectedOption.value;
+                        if (form.querySelector('#ctl00_PlaceHolderMain_ctl08_ChkFollowWebRegionalSettings').checked) {
+                            // user inherits web settings
+                            lcid = _spPageContextInfo.currentLanguage;
+                        } else {
+                            var regionalSettingsSelect = form.querySelector('#ctl00_PlaceHolderMain_ctl02_ctl01_DdlwebLCID');
+                            var selectedOption = regionalSettingsSelect.querySelector('[selected]');
+                            lcid = selectedOption.value;
+                        }
                     }
 
 
@@ -426,7 +438,7 @@ angular.module('ngSharePoint').factory('SPUtils',
 
 
             getWebById: function(webId) {
-                
+
                 var self = this;
                 var deferred = $q.defer();
 

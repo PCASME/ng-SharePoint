@@ -18,9 +18,9 @@
 
 angular.module('ngSharePoint').factory('SPList',
 
-    ['$q', 'SPCache', 'SPFolder', 'SPListItem', 'SPContentType', 'SPObjectProvider',
+    ['$q', 'SPHttp', 'SPCache', 'SPFolder', 'SPListItem', 'SPContentType', 'SPObjectProvider',
 
-    function SPList_Factory($q, SPCache, SPFolder, SPListItem, SPContentType, SPObjectProvider) {
+    function SPList_Factory($q, SPHttp, SPCache, SPFolder, SPListItem, SPContentType, SPObjectProvider) {
 
         'use strict';
 
@@ -37,7 +37,7 @@ angular.module('ngSharePoint').factory('SPList',
          *
          * *Note*: this method only instantiates a new `SPList` object initialized for future access to
          * list related API (get list items, folders, documents). This method doesn't retrieve any
-         * list properties or information. To get list properties it is necessary to call 
+         * list properties or information. To get list properties it is necessary to call
          * {@link ngSharePoint.SPList#getProperties getProperties} method.
          *
          * @param {SPWeb} web A valid {@link ngSharePoint.SPWeb SPWeb} object where the list is located
@@ -183,13 +183,9 @@ angular.module('ngSharePoint').factory('SPList',
             var self = this;
             var def = $q.defer();
             var defaultExpandProperties = 'Views';
-            // NOTA: Se ha eliminado la expansión automática del objeto 'Forms' debido a
-            // que si la lista es la 'SiteUserInfoList' se genera un error porque no
-            // tiene formularios sino que se utiliza la página /_layouts/15/UserDisp.aspx
-            // para visualizar un usuario y un popup para la edición.
 
             if (query) {
-                query.$expand = defaultExpandProperties + (query.$expand ? ', ' + query.$expand : '');
+                query.$expand = defaultExpandProperties + (query.$expand ? ',' + query.$expand : '');
             } else {
                 query = {
                     $expand: defaultExpandProperties
@@ -223,7 +219,6 @@ angular.module('ngSharePoint').factory('SPList',
                     return def.promise;
 
                 }
-
             }
 
 
@@ -302,7 +297,7 @@ angular.module('ngSharePoint').factory('SPList',
          * @methodOf ngSharePoint.SPList
          *
          * @description
-         * With this method, it is possible to modify list properties. The method has an object param 
+         * With this method, it is possible to modify list properties. The method has an object param
          * with any property to modify and makes a call to the server API in order to modify it.
          *
          * @param {object} properties An object with all the properties to modify
@@ -449,7 +444,7 @@ angular.module('ngSharePoint').factory('SPList',
          *       console.log(list.Fields.Title.DefaultValue);
          *       // this returns '' or any defined value
          *
-         *       console.log(list.Fields.DueDate.Required);                 
+         *       console.log(list.Fields.DueDate.Required);
          *       // this returns true or false
          *
          *       console.log(list.Fields.Editor.ReadOnlyField);
@@ -528,7 +523,7 @@ angular.module('ngSharePoint').factory('SPList',
          * This method retrieves a list of all content types of the list.
          *
          * If you call this method, a new `ContentType` property will be set with an array of content types.
-         * 
+         *
          * @returns {promise} promise with an array of all content types associated with the list.
          * Every element on the array is a {@link ngSharePoint.SPContentType SPContentType} object.
          *
@@ -814,6 +809,74 @@ angular.module('ngSharePoint').factory('SPList',
 
         };  // getWorkflowAssociationByName
 
+        /**
+         * @ngdoc function
+         * @name ngSharePoint.SPList#renderListData
+         * @methodOf ngSharePoint.SPList
+         *
+         * @description
+         * This method return an array of objects from the list
+         *
+         * @param {string} viewXml The CAML query.
+         * @returns {promise} promise with an object with all caml options used to retrieve list items
+         *
+         * @example
+         * This example retrieves one associated workflow
+         * <pre>
+         *   list.renderListData('<View><Query></Query><RowLimit>10</RowLimit></View>').then(function(items) {
+         *
+         *      console.log(items.toJson());
+         *      . . .
+         *
+         *   });
+         * </pre>
+         *
+        */
+        SPListObj.prototype.renderListData = function(viewXml) {
+
+            var self = this;
+            var def = $q.defer();
+            var executor = new SP.RequestExecutor(self.web.url);
+			// Set the headers for the REST API call.
+            // ----------------------------------------------------------------------------
+            var headers = {
+                "Accept": "application/json; odata=verbose",
+                "content-type": "application/json;odata=verbose"
+            };
+
+            // Make the call.
+            // ----------------------------------------------------------------------------
+            executor.executeAsync({
+				url: self.apiUrl + "/renderlistdata()",
+                method: 'POST',
+                body: angular.toJson({viewXml: viewXml}),
+                headers: headers,
+                success: function(data) {
+	                var d = angular.fromJson(utils.parseSPResponse(data).RenderListData);
+                    angular.forEach(d.Row, function(item) {
+						// convert single arrays to object
+				        angular.forEach(item, function(value, key) {
+				            if (angular.isArray(value) && value.length === 1) {
+				            	item[key] = value[0];
+				            }
+				        });
+                    });
+                    def.resolve(d.Row);
+                },
+                error: function(data, errorCode, errorMessage) {
+                    var err = utils.parseError({
+                        data: data,
+                        errorCode: errorCode,
+                        errorMessage: errorMessage
+                    });
+
+                    def.reject(err);
+                }
+            });
+
+            return def.promise;
+
+        };  // renderListData
 
 
 
@@ -829,7 +892,7 @@ angular.module('ngSharePoint').factory('SPList',
          * and order options for the data you request from the server.
          * All valid OData options implemented by the SharePoint REST api are accepted.
          *
-         * Go to {@link https://msdn.microsoft.com/en-us/library/office/fp142385(v=office.15).aspx SharePoint documentation} for 
+         * Go to {@link https://msdn.microsoft.com/en-us/library/office/fp142385(v=office.15).aspx SharePoint documentation} for
          * more information about the OData query operations in SharePoint REST api.
          *
          * By default, this method expands the following properties:
@@ -838,7 +901,7 @@ angular.module('ngSharePoint').factory('SPList',
          * * File/ParentFolder
          * * Folder
          * * Folder/ParentFolder
-         * 
+         *
          * @param {object=} query An object with all query options used to retrieve list items.
          *
          * It is possible to specify different query options:
@@ -859,11 +922,11 @@ angular.module('ngSharePoint').factory('SPList',
          *     };
          *     someList.getListItems(query).then(...);
          * </pre>
-         * @param {boolean=} resetPagination With this param you can specify if you want to continue with the 
+         * @param {boolean=} resetPagination With this param you can specify if you want to continue with the
          * previous query and retrieve the next set of items or want to reset the counter and start a completely new query.
-         * 
+         *
          * By default SharePoint returns sets of 100 items from the server. You can modify this value with the param `$top`
-         * 
+         *
          * @returns {promise} promise with a collection of {@link ngSharePoint.SPListItem SPListItem} elements
          * retrieved from the server
          *
@@ -890,7 +953,7 @@ angular.module('ngSharePoint').factory('SPList',
          *      announcementsList.getListItems({ $filter: "Department eq 2"}).then(...);
          * </pre>
          *
-         * But if you don't know the ID and want to make the query by its title, you should expand 
+         * But if you don't know the ID and want to make the query by its title, you should expand
          * the lookup column, select the desired related column and filter the result set.
          * The query will be similar to this:
          *
@@ -920,7 +983,11 @@ angular.module('ngSharePoint').factory('SPList',
             } else {
 
                 if (query) {
-                    query.$expand = defaultExpandProperties + (query.$expand ? ', ' + query.$expand : '');
+                    if (query.$expand !== void 0) {
+                        // previous expanded
+                        query.$expand = query.$expand.substring(0, query.$expand.lastIndexOf(defaultExpandProperties));
+                    }
+                    query.$expand = defaultExpandProperties + (query.$expand ? ',' + query.$expand : '');
                 } else {
                     query = {
                         $expand: defaultExpandProperties
@@ -1036,7 +1103,7 @@ angular.module('ngSharePoint').factory('SPList',
             var executor = new SP.RequestExecutor(self.web.url);
             var defaultExpandProperties = 'ContentType,File,File/ParentFolder,Folder,Folder/ParentFolder';
             var query = {
-                $expand: defaultExpandProperties + (expandProperties ? ', ' + expandProperties : '')
+                $expand: defaultExpandProperties + (expandProperties ? ',' + expandProperties : '')
             };
 
             executor.executeAsync({
@@ -1105,17 +1172,17 @@ angular.module('ngSharePoint').factory('SPList',
          *
          * <pre>
          *   // This returns the name of the author (string)
-         *   list.getItemProperty(ID, 'Created/Name').then(...);        
+         *   list.getItemProperty(ID, 'Created/Name').then(...);
          *
          *   // This returns the title of the department (string)
-         *   list.getItemProperty(ID, 'Department/Title').then(...)     
+         *   list.getItemProperty(ID, 'Department/Title').then(...)
          *
          *   // This returns the manager of the department (item)
-         *   list.getItemProperty(ID, 'Department/Manager').then(...)   
+         *   list.getItemProperty(ID, 'Department/Manager').then(...)
          *
-         *   // This returns the EMail of the manager's department for the 
+         *   // This returns the EMail of the manager's department for the
          *   // user who has created the item
-         *   list.getItemProperty(ID, 'Created/Department/Manager/EMail');  
+         *   list.getItemProperty(ID, 'Created/Department/Manager/EMail');
          * </pre>
          *
         */
