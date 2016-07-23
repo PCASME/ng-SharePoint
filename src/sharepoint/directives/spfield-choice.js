@@ -321,8 +321,8 @@ angular.module('ngSharePoint').directive('spfieldChoice',
 
                                 $timeout(function() {
                                     $scope.$apply(function() {
-                                        $scope.dropDownValue = $scope.value;
                                         $scope.choices = choices;
+                                        $scope.dropDownValue = $scope.value;
                                     });
                                 });
                             });
