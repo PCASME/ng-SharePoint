@@ -140,11 +140,22 @@ angular.module('ngSharePoint').factory('SPListItem',
             var apiUrl = this.list.apiUrl + '/Items';
 
             if (this.Id !== void 0) {
-                
-                apiUrl += '(' + this.Id + ')';
-            }
 
+                // If the list is an external list, gets the __metadata.uri instead.
+                if (this.list.HasExternalDataSource === true) {
+
+                    apiUrl = this.__metadata.uri;
+
+                } else {
+
+                    apiUrl += '(' + this.Id + ')';
+
+                }
+
+            }
+            
             return apiUrl;
+
         };
 
 
@@ -300,7 +311,8 @@ angular.module('ngSharePoint').factory('SPListItem',
 
                     utils.cleanDeferredProperties(d);
                     self.FieldValuesAsHtml = d;
-                    def.resolve(this);
+                    def.resolve(d);
+                    
                 }, 
 
                 error: function(data, errorCode, errorMessage) {
@@ -328,7 +340,7 @@ angular.module('ngSharePoint').factory('SPListItem',
          * @methodOf ngSharePoint.SPListItem
          *
          * @description
-         * Gets the file property of the item and attaches it to 'this' objtect.
+         * Gets the file property of the item and attaches it to 'this' object.
          * If the item is not a DocumentLibrary document element, the REST query returns no results.
          *
          * @returns {promise} promise with the result of the REST query

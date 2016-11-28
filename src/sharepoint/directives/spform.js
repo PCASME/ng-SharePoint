@@ -293,14 +293,16 @@ angular.module('ngSharePoint').directive('spform',
                     // If there are not invalid field focused, focus the first field.
                     if (!fieldFocused && this.focusElements.length > 0) {
 
-                        fieldFocused = this.focusElements[0];
+			fieldFocused = this.focusElements[0].element;
+                        //fieldFocused = this.focusElements[0];
 
                     }
 
                     // Set the focus on the final element if exists.
                     if (fieldFocused !== void 0 && fieldFocused.length > 0) {
 
-                        fieldFocused[0].focus();
+			fieldFocused.focus();
+                        //fieldFocused[0].focus();
 
                     }
 

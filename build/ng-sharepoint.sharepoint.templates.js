@@ -9,7 +9,7 @@ angular.module("templates/error.html", []).run(["$templateCache", function($temp
 angular.module("templates/form-templates/spfield-attachments-display.html", []).run(["$templateCache", function($templateCache) {
   $templateCache.put("templates/form-templates/spfield-attachments-display.html",
     "<div ng-repeat=\"file in attachmentFiles\">\n" +
-    "	<a ng-href=\"{{file.ServerRelativeUrl}}\" ng-bind=\"file.FileName\"></a>\n" +
+    "	<a ng-href=\"{{file.ServerRelativeUrl}}\" ng-bind=\"file.FileName\" target=\"{{target}}\"></a>\n" +
     "</div>\n" +
     "");
 }]);
@@ -138,7 +138,7 @@ angular.module("templates/form-templates/spfield-control.html", []).run(["$templ
 
 angular.module("templates/form-templates/spfield-currency-display.html", []).run(["$templateCache", function($templateCache) {
   $templateCache.put("templates/form-templates/spfield-currency-display.html",
-    "<div ng-if=\"!isNaN(value)\" ng-bind=\"$parent.value.toFixed(cultureInfo.numberFormat.CurrencyDecimalDigits) + ' ' + cultureInfo.numberFormat.CurrencySymbol\" class=\"field-display-value\"></div>\n" +
+    "<div ng-if=\"!!value && !isNaN(value)\" ng-bind=\"$parent.value.toFixed(cultureInfo.numberFormat.CurrencyDecimalDigits) + ' ' + cultureInfo.numberFormat.CurrencySymbol\" class=\"field-display-value\"></div>\n" +
     "");
 }]);
 
@@ -197,7 +197,7 @@ angular.module("templates/form-templates/spfield-datetime-edit.html", []).run(["
 
 angular.module("templates/form-templates/spfield-description.html", []).run(["$templateCache", function($templateCache) {
   $templateCache.put("templates/form-templates/spfield-description.html",
-    "<span class=\"ms-metadata spfield-body-control\" ng-bind-html=\"::schema.Description | newlines\" ng-show=\"currentMode == 'edit'\"></span>\n" +
+    "<span class=\"ms-metadata spfield-body-control\" ng-bind-html=\"schema.Description | newlines\" ng-show=\"currentMode == 'edit'\"></span>\n" +
     "");
 }]);
 
@@ -340,7 +340,7 @@ angular.module("templates/form-templates/spfield-note-edit.html", []).run(["$tem
     "<div ng-if=\"rteFullHtml\" class=\"ms-rtestate-field ms-rtefield ms-inputBox\" id=\"{{schema.EntityPropertyName}}_{{schema.Id}}_$TextField_topDiv\">\n" +
     "    <div id=\"{{schema.EntityPropertyName}}_{{schema.Id}}_$TextField_inplacerte_label\" style=\"display:none\" ng-bind=\"$parent.rteLabelText\"></div>\n" +
     "    <div ng-model=\"$parent.value\" ng-blur=\"$parent.updateModel($event)\" ng-keyup=\"$parent.updateModel($event)\" ng-change=\"$parent.updateModel($event)\" contenteditable=\"true\" data-spfield-focus-element=\"true\" class=\"ms-rtestate-write ms-rteflags-0 ms-rtestate-field\" id=\"{{schema.EntityPropertyName}}_{{schema.Id}}_$TextField_inplacerte\" style=\"min-height:84px\" aria-labelledby=\"{{schema.EntityPropertyName}}_{{schema.Id}}_$TextField_inplacerte_label\" role=\"textbox\" aria-autocomplete=\"both\" aria-haspopup=\"true\" aria-multiline=\"true\"></div>\n" +
-    "    <div style=\"clear : both;\"></div>\n" +
+    "    <div style=\"clear: both;\"></div>\n" +
     "</div>\n" +
     "\n" +
     "<spfield-validation-messages></spfield-validation-messages>\n" +
@@ -374,7 +374,7 @@ angular.module("templates/form-templates/spfield-note-edit.html", []).run(["$tem
 
 angular.module("templates/form-templates/spfield-number-display.html", []).run(["$templateCache", function($templateCache) {
   $templateCache.put("templates/form-templates/spfield-number-display.html",
-    "<div ng-if=\"!isNaN(value)\" ng-bind=\"(schema.Percentage ? ($parent.value * 100).toFixed(schema.Decimals) + ' ' + cultureInfo.numberFormat.PercentSymbol : $parent.value.toFixed(schema.Decimals))\" class=\"field-display-value\"></div>\n" +
+    "<div ng-if=\"!!value && !isNaN(value)\" ng-bind=\"(schema.Percentage ? ($parent.value * 100).toFixed(schema.Decimals) + ' ' + cultureInfo.numberFormat.PercentSymbol : $parent.value.toFixed(schema.Decimals))\" class=\"field-display-value\"></div>\n" +
     "");
 }]);
 
@@ -478,14 +478,11 @@ angular.module("templates/form-templates/spfield-workflowstatus-display.html", [
 
 angular.module("templates/form-templates/spfield.html", []).run(["$templateCache", function($templateCache) {
   $templateCache.put("templates/form-templates/spfield.html",
-    "<div class=\"{{classAttr}}\"\n" +
-    "	 style=\"display: table-row; width: 100%;\">\n" +
-    "    <div class=\"ms-formlabel spfield-label\"\n" +
-    "		 style=\"display: table-cell; vertical-align: top; width: 113px;\">\n" +
+    "<div class=\"{{classAttr}}\" style=\"display: table-row; width: 100%;\">\n" +
+    "    <div class=\"ms-formlabel spfield-label\" style=\"display: table-cell; vertical-align: top; width: 113px;\">\n" +
     "        <spfield-label {{attributes}}></spfield-label>\n" +
     "    </div>\n" +
-    "    <div class=\"ms-formbody spfield-body\"\n" +
-    "		 style=\"display: table-cell; vertical-align: top; width: 350px;\">\n" +
+    "    <div class=\"ms-formbody spfield-body\" style=\"display: table-cell; vertical-align: top; width: 350px;\">\n" +
     "        <spfield-control {{attributes}}></spfield-control>\n" +
     "        <spfield-description {{attributes}}></spfield-description>\n" +
     "    </div>\n" +

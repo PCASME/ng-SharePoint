@@ -3,7 +3,7 @@
   "version": "0.8.1",
   "homepage": "https://github.com/Kaldeera/ng-SharePoint",
   "authors": [
-    "Pau Codina <pau.codina@kaldeera.com>"
+    "Pedro Castro <pcasmenew@gmail.com>"
   ],
   "description": "ngSharePoint is a powerful and extensible AngularJS module that converts the APIs of SharePoint (REST and JSOM) to the AngularJS world.",
   "main": "build/ng-sharepoint.js",

@@ -16,19 +16,21 @@
 // ***************************************************************************
 // javascript extensions
 //
-String.prototype.ltrim = function(s) {
-    return this.replace(new RegExp("^" + s), '');
+String.prototype.ltrim = function(s) { 
+    return this.replace(new RegExp('^' + s), ''); 
 };
 
 
-String.prototype.rtrim = function(s) {
-    return this.replace(new RegExp(s + "*$"), '');
+String.prototype.rtrim = function(s) { 
+    return this.replace(new RegExp(s + '*$'), '');
 };
 
 
 String.prototype.trimS = function(s) {
-	return this.replace(new RegExp("^" + s), '').replace(new RegExp(s + "*$"), '');
+	return this.replace(new RegExp('^' + s), '').replace(new RegExp(s + '*$'), '');
 };
+
+
 
 
 
@@ -65,7 +67,7 @@ var utils = {
 	//
 	isGuid: function isGuid(value) {
 
-		var guidRegExp = new RegExp("^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$");
+		var guidRegExp = new RegExp('^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$');
 
 		return guidRegExp.test((value || '').trim().ltrim('{').rtrim('}'));
 
@@ -86,7 +88,6 @@ var utils = {
 
 		//var params = document.URL.split("?")[1].split("&");
 		var params = window.location.search.split('?');
-		var strParams = "";
 
 		if (params.length > 1) {
 
@@ -94,7 +95,7 @@ var utils = {
 
 			for (var i = 0; i < params.length; i++) {
 
-				var singleParam = params[i].split("=");
+				var singleParam = params[i].split('=');
 				if (singleParam[0] == paramToRetrieve) return singleParam[1];
 
 			}
@@ -232,7 +233,7 @@ var utils = {
 
 		if (response.statusCode !== 204 && response.status !== 204) {
 
-			d = angular.fromJson(response.body || response.data || '{ "d": {} }').d;
+			d = angular.fromJson(response.body || response.data || '{ "d": {} }').d;
 
 			if (d.results) {
 				d = d.results;

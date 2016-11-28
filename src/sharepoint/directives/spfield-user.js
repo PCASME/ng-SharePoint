@@ -310,7 +310,7 @@ angular.module('ngSharePoint').directive('spfieldUser',
 
                         } else {
 
-                            // If no value returns an empty object for correct binding
+                            // If no value, returns an empty object for correct binding.
                             var userItem = {
                                 Title: '',
                                 url: '',
@@ -419,7 +419,7 @@ angular.module('ngSharePoint').directive('spfieldUser',
                     };
 
 
-                    // Generate the PickerEntities to fill the PeoplePicker
+                    // Generate the PickerEntities to fill the PeoplePicker.
                     var pickerEntities = [];
 
                     angular.forEach($scope.selectedUserItems, function(user) {
@@ -436,7 +436,7 @@ angular.module('ngSharePoint').directive('spfieldUser',
                             DisplayText             Gets or sets text in the editing control.
                             EntityData              Gets or sets a data-mapping structure that is defined by the consumer of the PickerEntity class.
                             EntityDataElements
-                            EntityGroupName         Group under which this entity is filed in the picker.
+                            EntityGroupName         Group under which this entity is filled in the picker.
                             EntityType              Gets or sets the name of the entity data type.
                             HierarchyIdentifier     Gets or sets the identifier of the current picker entity within the hierarchy provider.
                             IsResolved              Gets or sets a value that indicates whether the entity has been validated.

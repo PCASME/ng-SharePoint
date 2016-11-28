@@ -31,7 +31,7 @@ angular.module('ngSharePoint').factory('SPFile',
          * to specify their properties.
          *
          * By default, in document and picture libraries, when you call {@link ngSharePoint.SPList#getListItems getListItems} or 
-         * {@link ngSharePoint.SPList#getItemById getItemById}, by default a ´item.File´ property are created and contains
+         * {@link ngSharePoint.SPList#getItemById getItemById}, by default an ´item.File´ property are created and contains
          * file information.
          *
          * @param {SPWeb} web A valid {@link ngSharePoint.SPWeb SPWeb} object where the file is stored.

@@ -62,7 +62,7 @@ angular.module('ngSharePoint').service('SPFieldDirective',
          *
          * The 'this' word in this function is the directive object defined in the
          * 'spfield-xxx' directive. See the definition of the 'directive object' below.
-         *
+         * 
          * Example of use in a directive 'post-link' function:
          *
          *      // Define the 'directive' object
@@ -72,7 +72,7 @@ angular.module('ngSharePoint').service('SPFieldDirective',
          *          replaceAll: false,
          *          init: function() {
          *              $scope.SomeText = 'My directive';
-         *
+         *          
          *              // Call some private function
          *              MyPrivateFunction();
          *          }
@@ -84,21 +84,21 @@ angular.module('ngSharePoint').service('SPFieldDirective',
          *      // (Becomes the 'this' word within the 'baseLinkFn' function).
          *
          *      SPFieldDirective.baseLinkFn.apply(directiveObj, arguments);
-         *
+         *      
          *
          * 'directiveObj' definition:
          *
          *        Required properties:
          *        --------------------
          *
-         *              fieldTypeName: The type name of the directive to load the
+         *              fieldTypeName: The type name of the directive to load the 
          *                             correct directive template.
          *
-         *
+         *              
          *        Optional properties/functions:
          *        ------------------------------
          *
-         *              replaceAll: If set to true, the 'renderField' function will replace
+         *              replaceAll: If set to true, the 'renderField' function will replace 
          *                          the entire element instead its contents.
          *
          *              displayTemplateUrl: Custom field template for display rendering.
@@ -107,24 +107,24 @@ angular.module('ngSharePoint').service('SPFieldDirective',
          *
          *              init (function): An initialization function for the directive.
          *
-         *              parserFn (function): If defined, add this parser function to the
+         *              parserFn (function): If defined, add this parser function to the 
          *              (view to model)      model controller '$parsers' array.
-         *                                   Used to sanitize/convert the value as well as
+         *                                   Used to sanitize/convert the value as well as 
          *                                   validation.
-         *                                   Working examples are in the 'spfieldMultichoice'
+         *                                   Working examples are in the 'spfieldMultichoice' 
          *                                   or 'spfieldLookupmulti' directives.
          *
-         *              formatterFn (function): If defined, add this formatter function to the
+         *              formatterFn (function): If defined, add this formatter function to the 
          *              (model to view)         model controller '$formatters' array.
-         *                                      Used to format/convert values for display in the
+         *                                      Used to format/convert values for display in the 
          *                                      control and validation.
          *
-         *              watchModeFn (function): If defined, replace the default behavior in the
+         *              watchModeFn (function): If defined, replace the default behavior in the 
          *                                      'Watch for form mode changes' function.
-         *                                      The default behavior is to call the 'renderField'
+         *                                      The default behavior is to call the 'renderField' 
          *                                      function.
-         *
-         *              watchValueFn (function): If defined, applies it after the default behavior
+         *                          
+         *              watchValueFn (function): If defined, applies it after the default behavior 
          *                                       in the 'Watch for field value changes' function.
          *                                       Deprecated: new spfield-* don't have attribute:
          *                                          value: '=ngModel'
@@ -135,7 +135,7 @@ angular.module('ngSharePoint').service('SPFieldDirective',
          *                                       set's the scope.value variable with the new value
          *                                       (modelCtrl.$viewValue)
 
-         *              onValidateFn (function): If defined, applies it after the default behavior
+         *              onValidateFn (function): If defined, applies it after the default behavior 
          *                                       in the '$scope.$on('validate', ...)' function.
          *
          *              postRenderFn (function): If defined, will be executed after the default
@@ -213,9 +213,9 @@ angular.module('ngSharePoint').service('SPFieldDirective',
                     // extendedTemplate: {
                     //     html: A string that contains the HTML.
                     //     url: Url to the template that contains the HTML. This overwrites 'html' property
-                    //     replaceOnDisplay: true or false that indicates if the template will replace the
+                    //     replaceOnDisplay: true or false that indicates if the template will replace the 
                     //                       default field template on 'display' mode.
-                    //     replaceOnEdit: true or false that indicates if the template will replace the default
+                    //     replaceOnEdit: true or false that indicates if the template will replace the default 
                     //                    field template on 'edit' mode.
                     //     replace: true or false that indicates if the template will replace the default field
                     //              template on both form modes (display and edit).
@@ -341,7 +341,7 @@ angular.module('ngSharePoint').service('SPFieldDirective',
 
                     $q.when(directive.onValidateFn.apply(directive, arguments)).then(function() {
 
-                        if ($scope.schema !== undefined && $scope.schema.onValidate !== undefined) {
+                        if (angular.isDefined($scope.schema) && angular.isDefined($scope.schema.onValidate)) {
 
                             $q.when(SPUtils.callFunctionWithParams($scope.schema.onValidate, $scope)).then(function(result) {
 
@@ -356,7 +356,7 @@ angular.module('ngSharePoint').service('SPFieldDirective',
 
                 } else {
 
-                    if ($scope.schema !== undefined && $scope.schema.onValidate !== undefined) {
+                    if (angular.isDefined($scope.schema) && angular.isDefined($scope.schema.onValidate)) {
 
                         $q.when(SPUtils.callFunctionWithParams($scope.schema.onValidate, $scope)).then(function(result) {
 
@@ -372,19 +372,6 @@ angular.module('ngSharePoint').service('SPFieldDirective',
                 return deferred.promise;
             };
 
-
-            // ****************************************************************************
-            // New model value ... render
-            //
-            $scope.modelCtrl.$render = function() {
-
-                if (angular.isFunction(directive.renderFn)) {
-                    directive.renderFn(directive, arguments);
-                } else {
-                    $scope.value = $scope.modelCtrl.$viewValue;
-                }
-
-            };
 
 
             // Apply the directive initializacion if specified.
@@ -431,7 +418,18 @@ angular.module('ngSharePoint').service('SPFieldDirective',
             });
 
 
+            // ****************************************************************************
+            // New model value ... render
+            //
+            $scope.modelCtrl.$render = function() {
 
+                if (angular.isFunction(directive.renderFn)) {
+                    directive.renderFn(directive, arguments);
+                } else {
+                    $scope.value = $scope.modelCtrl.$viewValue;
+                }
+
+            };
 
         }; // baseLinkFn
 

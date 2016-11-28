@@ -129,7 +129,8 @@ angular.module('ngSharePoint').directive('spPercentage',
 				ngModel.$parsers.push(function(value) {
 					if ($scope.schema.Percentage && value !== void 0) {
 						// If decimals is set to 'Auto', use 2 decimals for percentage values.
-						// var decimals = isNaN($scope.schema.Decimals) ? 2 : $scope.schema.Decimals;
+						//var decimals = isNaN($scope.schema.Decimals) ? 2 : $scope.schema.Decimals;
+						//return (value / 100).toFixed(decimals);
 						var percentageNumber = parseFloat(value / 100);
 						return (isNaN(value)) ? value : percentageNumber;
 					} else {

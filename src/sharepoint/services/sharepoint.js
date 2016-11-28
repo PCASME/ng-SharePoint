@@ -80,6 +80,72 @@ angular.module('ngSharePoint').provider('SharePoint',
 				return def.promise;
 			};
 
+
+
+			/**
+			 * @ngdoc function
+			 * @name ngSharePoint.SharePoint#get
+			 * @methodOf ngSharePoint.SharePoint
+			 * 
+			 * @description
+			 * Returns the results of the query to the SharePoint API REST specified by the required url.
+			 * 
+			 * @param {string} webServerRelativeUrl The web server relative url of the web where to perform the query.
+			 * @param {string} queryUrl The url of the complete query to perform. It refers to the query part after /<webServerRelativeUrl>/_api/web/...
+			 * @returns {promise} Promise with results of the query.
+			 * 
+			 * @example
+			 * <pre>
+			 *	SharePoint.get("/sites/rrhh/_api/web/Lists/GetByTitle('MyList')/RoleAssignments/GetByPrincipalId(35)").then(function(results) {
+			 *	  // ... do something with the 'rrhh' web object
+			 *	});
+			 * </pre>
+			 */
+			this.get = function(webServerRelativeUrl, queryUrl) {
+
+				var def = $q.defer();
+
+				SPUtils.SharePointReady().then(function() {
+
+					var executor = new SP.RequestExecutor(webServerRelativeUrl);
+	                var endpoint = '/' + webServerRelativeUrl.trimS('/') + "/_api/web/" + queryUrl.trimS('/');
+
+
+					executor.executeAsync({
+
+						url: endpoint,
+						method: 'GET', 
+						headers: { 
+							"Accept": "application/json; odata=verbose"
+						}, 
+
+						success: function(data) {
+
+							var d = utils.parseSPResponse(data);
+							utils.cleanDeferredProperties(d);
+							
+							def.resolve(d);
+							
+						}, 
+
+						error: function(data, errorCode, errorMessage) {
+
+							var err = utils.parseError({
+								data: data,
+								errorCode: errorCode,
+								errorMessage: errorMessage
+							});
+
+							def.reject(err);
+						}
+					});
+				});
+
+
+				return def.promise;
+
+			}; // getProperties
+
 		};
 
 

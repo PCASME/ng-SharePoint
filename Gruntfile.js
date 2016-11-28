@@ -72,6 +72,28 @@ module.exports = function(grunt) {
             }
         },
 
+        copy: {
+            tocdn: {
+                expand: true,
+                cwd: 'build/',
+                src: '**',
+                dest: '../jsdelivr/files/angular.ng-sharepoint/<%= pkg.version %>/',
+                flatten: true,
+                filter: 'isFile'
+            },
+
+            toServer: {
+                files: [{
+                    cwd: 'build/',
+                    expand: true,
+                    src: '**',
+                    //dest: 'R:\\app-ngforms\\js\\ngSharePoint'
+                    //dest: 'X:\\app\\ngSharepoint'
+                    dest: 'U:\\app\\libs'
+                }]
+            }
+        },
+
         ngdocs: {
             options: {
                 dest: 'docs',

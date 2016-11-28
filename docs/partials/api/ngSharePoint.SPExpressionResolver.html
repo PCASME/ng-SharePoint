@@ -1,0 +1,94 @@
+<h1><code ng:non-bindable="">SPExpressionResolver</code>
+<div><span class="hint">service in module <code ng:non-bindable="">ngSharePoint</code>
+</span>
+</div>
+</h1>
+<div><h2 id="description">Description</h2>
+<div class="description"><div class="ngsharepoint-spexpressionresolver-page"><p>SPExpressionResolver provides functionality to solve expressions.</p>
+<p>The method creates new scope variable called <code>expressions</code> that contains variables with the name of the expression 
+provider used and their corresponding values. With this way, when AngularJS analizes the 
+expressions, its will be evaluated correctly.</p>
+<p>Valid expressions should match the next pattern:
+<pre class="prettyprint linenums">
+{provider.value}
+</pre>
+Where <code>provider</code> refers to the provider who will solve the expression, and <code>value</code> refers
+to the valuo to solve.</p>
+<p>Actually the only providers that you can use are:</p>
+<ul>
+<li><code>item</code>: solves item related values</li>
+<li><code>currentUser</code>: solves current user related values (site user info list)</li>
+<li><code>param</code>: solves page parameters</li>
+<li><code>web</code>: solves web properties</li>
+<li><code>list</code>: solves list properties</li>
+<li><code>userProfile</code>: (coming soon)</li>
+</ul>
+<p>Expression, also, can be composed by complex values like:
+<pre class="prettyprint linenums">
+{provider.value1.value2....valuen}
+</pre>
+This only apply to <code>currentUser</code> or <code>item</code> values.</p>
+</div></div>
+<div class="member method"><h2 id="methods">Methods</h2>
+<ul class="methods"><li><h3 id="methods_resolve">resolve(Text, scope)</h3>
+<div class="resolve"><div class="ngsharepoint-spexpressionresolver-resolve-page"><p>This method solves all expressions contained within the text received as parameter.</p>
+</div><h5 id="methods_resolve_parameters">Parameters</h5><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>Text</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ngsharepoint-spexpressionresolver-resolve-page"><p>expression to solve</p>
+</div></td></tr><tr><td>scope</td><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="ngsharepoint-spexpressionresolver-resolve-page"><p>with the context where <code>expressions</code> values will be placed.</p>
+</div></td></tr></tbody></table><h5 id="methods_resolve_returns">Returns</h5><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-promise">promise</a></td><td><div class="ngsharepoint-spexpressionresolver-resolve-page"><p>Promise with the solved expressions</p>
+</div></td></tr></table><h4 id="methods_resolve_example">Example</h4>
+<div class="example"><div class="ngsharepoint-spexpressionresolver-resolve-page"><pre class="prettyprint linenums">
+var textToEvaluate = '{currentUser.Id}=={item.Author.Id} and {params.Close}=="Yes"';
+SPExpressionResolver.resolve(textToEvaluate, $scope).then(function(sentence) {
+
+     // At this point, expressions are solved and scope variables created
+     // We can evaluate the sentence
+
+     if ($scope.$eval(sentence)) {
+
+         // The current user is the author of the current item and exists
+         // a page param equals to `Yes`
+     }
+ });
+</pre>
+</div></div>
+</div>
+</li>
+</ul>
+</div>
+<h2 id="example">Example</h2>
+<div class="example"><div class="ngsharepoint-spexpressionresolver-page"><p>Example of expressions:
+<pre class="prettyprint linenums">
+{item.Status}=='Closed'
+</pre>
+<pre class="prettyprint linenums">
+{currentUser.JobTitle}
+</pre>
+This expression creates a new variable called <code>currentUser</code> with the next composition:
+<pre class="prettyprint linenums">
+scope.expressions = {
+     currentUser: {
+          JobTitle: 'value' 
+     }
+}
+</pre>
+<pre class="prettyprint linenums">
+{item.Department.Manager.Email}
+</pre>
+Refers to the manager&#39;s email of the department where the item is referenced.
+This expressions creates the next object composition:
+<pre class="prettyprint linenums">
+scope.expressions = {
+     item: {
+         Department: {
+             Manager: {
+                 Email: 'useremail@company.com'
+             }
+         }
+     }
+}
+</pre>
+<pre class="prettyprint linenums">
+{currentUser.Area.Address}
+</pre>
+</div></div>
+</div>

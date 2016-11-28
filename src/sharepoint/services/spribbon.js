@@ -35,6 +35,8 @@
 
         var spRibbonService = {
 
+            instance                    : null,
+            getInstance                 : getInstance,
             ready                       : ready,
             refresh                     : refresh,
             addTab                      : addTab,
@@ -68,6 +70,7 @@
             ribbon = pageManager.get_ribbon();
             commandDispatcher = pageManager.get_commandDispatcher();
 
+            spRibbonService.instance = ribbon;
             ribbonReady = true;
             
             ribbonDeferred.resolve();
@@ -121,6 +124,14 @@
             return ribbonDeferred.promise;
 
         } // ready
+
+
+
+        function getInstance() {
+
+            return ribbon;
+
+        }
 
 
 
@@ -271,7 +282,7 @@
                 See 'RibbonTemplates' at the end of the file 'CMDUI.XML' (<15_deep>\TEMPLATE\GLOBAL\CMDUI.XML).
                 Also see these recomendations: http://www.andrewconnell.com/blog/Always-Create-Your-Own-Group-Templates-with-SharePoint-Ribbon-Customizations
             */
-            controlProperties.Image32by32 = btnImage || '_layouts/15/images/placeholder32x32.png';
+            controlProperties.Image32by32 = btnImage || '/_layouts/15/images/placeholder32x32.png';
             controlProperties.ToolTipTitle = tooltip || label;
             controlProperties.ToolTipDescription = description || tooltip || '';
             controlProperties.LabelText = label;
@@ -299,7 +310,7 @@
             var properties = new CUI.CommandContextSwitchCommandProperties();
 
             properties.ChangedByUser = false;
-            properties.NewContextComand = 'CPEditTab';
+            properties.NewContextCommand = 'CPEditTab';
             properties.NewContextId = 'Ribbon.EditingTools.CPEditTab';
             properties.OldContextCommand = 'Ribbon.ListForm.Edit';
             properties.OldContextId = 'Ribbon.ListForm.Edit';
@@ -509,6 +520,12 @@
 
         function registerPageComponent() {
 
+            /**
+             * See the page 'Developing Page Components for the Server Ribbon'.
+             * https://msdn.microsoft.com/en-us/library/office/ff407303(v=office.14).aspx
+             */
+
+
             // Register the type 'ngSharePointPageComponent'.
             Type.registerNamespace('ngSharePointPageComponent');
 
@@ -550,6 +567,12 @@
                 // Create an array of handled commands with handler methods
                 init: function() {
 
+                    /**
+                     * The SP.Ribbon.PageState.PageStateHandler.init() Method initializes the page component. 
+                     * You can use this method to initialize any variables for your page component. This includes initializing the list of 
+                     * commands that your page component can handle and also registering the array of methods that are used to handle commands.
+                     */
+
                     this._commands = [];
                     this._handledCommands = {};
 
@@ -558,12 +581,22 @@
 
                 getGlobalCommands: function() {
 
+                    /**
+                     * The SP.Ribbon.PageState.PageStateHandler.getGlobalCommands() Method returns a string array with the names of the global commands. 
+                     * The page component responds to these commands when it is on the page.
+                     */
+
                     return this._commands;
 
                 },
 
 
                 getFocusedCommands: function() {
+
+                    /**
+                     * The SP.Ribbon.PageState.PageStateHandler.getFocusedCommands() Method returns a string array with the names of the focused commands. 
+                     * The page component only responds to these commands if it has the focus.
+                     */
 
                     return [];
 
@@ -572,12 +605,22 @@
 
                 handleCommand: function(commandId, properties, sequence) {
 
+                    /**
+                     * The SP.Ribbon.PageState.PageStateHandler.handleCommand(commandId, properties, sequence) Method is used to handle a command that is passed to the page component. 
+                     * You can call other JavaScript functions or write code in the SP.Ribbon.PageState.PageStateHandler.handleCommand(commandId, properties, sequence) Method.
+                     */
+
                     return this._handledCommands[commandId].handle(commandId, properties, sequence);
 
                 },
 
 
                 canHandleCommand: function(commandId) {
+
+                    /**
+                     * The SP.Ribbon.PageState.PageStateHandler.canHandleCommand(commandId) Method returns a Boolean that indicates whether the page 
+                     * component can handle the command that was passed to it.
+                     */
 
                     var canHandle = this._handledCommands[commandId].enabled;
 
@@ -594,6 +637,10 @@
 
                 isFocusable: function() {
 
+                    /**
+                     * The SP.Ribbon.PageState.PageStateHandler.isFocusable() Method returns a Boolean that indicates whether the page component can receive the focus. 
+                     * If this method returns false, the page manager will not register the page component's focused commands.
+                     */
                     return false;
 
                 },
@@ -601,6 +648,10 @@
 
                 receiveFocus: function() {
 
+                    /**
+                     * The SP.Ribbon.PageState.PageStateHandler.receiveFocus() Method is used when the page component receives focus.
+                     * (Optional Page Component Method)
+                     */ 
                     return true;
 
                 },
@@ -608,6 +659,10 @@
 
                 yieldFocus: function() {
 
+                    /**
+                     * The SP.Ribbon.PageState.PageStateHandler.yieldFocus() Method is called when the page component loses focus.
+                     * (Optional Page Component Method)
+                     */
                     return false;
 
                 },
@@ -662,11 +717,10 @@
 
             // Register classes and initialize page component
             ngSharePointPageComponent.registerClass('ngSharePointPageComponent', CUI.Page.PageComponent);
-            var instance = ngSharePointPageComponent.initializePageComponent();
 
 
             // Returns the component instance
-            return instance;
+            return ngSharePointPageComponent.initializePageComponent();
 
         } // registerPageComponent
 

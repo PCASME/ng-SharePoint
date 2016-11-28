@@ -18,9 +18,9 @@
 
 angular.module('ngSharePoint').factory('SPList',
 
-    ['$q', 'SPHttp', 'SPCache', 'SPFolder', 'SPListItem', 'SPContentType', 'SPObjectProvider',
+    ['$q', 'SPCache', 'SPFolder', 'SPListItem', 'SPContentType', 'SPObjectProvider',
 
-    function SPList_Factory($q, SPHttp, SPCache, SPFolder, SPListItem, SPContentType, SPObjectProvider) {
+    function SPList_Factory($q, SPCache, SPFolder, SPListItem, SPContentType, SPObjectProvider) {
 
         'use strict';
 
@@ -37,7 +37,7 @@ angular.module('ngSharePoint').factory('SPList',
          *
          * *Note*: this method only instantiates a new `SPList` object initialized for future access to
          * list related API (get list items, folders, documents). This method doesn't retrieve any
-         * list properties or information. To get list properties it is necessary to call
+         * list properties or information. To get list properties it is necessary to call 
          * {@link ngSharePoint.SPList#getProperties getProperties} method.
          *
          * @param {SPWeb} web A valid {@link ngSharePoint.SPWeb SPWeb} object where the list is located
@@ -219,6 +219,7 @@ angular.module('ngSharePoint').factory('SPList',
                     return def.promise;
 
                 }
+
             }
 
 
@@ -297,7 +298,7 @@ angular.module('ngSharePoint').factory('SPList',
          * @methodOf ngSharePoint.SPList
          *
          * @description
-         * With this method, it is possible to modify list properties. The method has an object param
+         * With this method, it is possible to modify list properties. The method has an object param 
          * with any property to modify and makes a call to the server API in order to modify it.
          *
          * @param {object} properties An object with all the properties to modify
@@ -429,8 +430,8 @@ angular.module('ngSharePoint').factory('SPList',
          * With all of this information, you might construct new interfaces (views, forms, etc) that follow
          * definitions of any SharePoint list.
          *
-         * *Note*: The list of fields of the list isn't necessaray equal to the item content type.
-         * If you want to get the content type specific fields, you can call `getFields method of
+         * *Note*: The fields of the list are not necessarily equal to the fields of the item content type.
+         * If you want to get the content type specific fields, you can call `getFields` method of 
          * the specific content type.
          *
          * @returns {promise} promise with an object that contains all of the fields schema
@@ -892,7 +893,7 @@ angular.module('ngSharePoint').factory('SPList',
          * and order options for the data you request from the server.
          * All valid OData options implemented by the SharePoint REST api are accepted.
          *
-         * Go to {@link https://msdn.microsoft.com/en-us/library/office/fp142385(v=office.15).aspx SharePoint documentation} for
+         * Go to {@link https://msdn.microsoft.com/en-us/library/office/fp142385(v=office.15).aspx SharePoint documentation} for 
          * more information about the OData query operations in SharePoint REST api.
          *
          * By default, this method expands the following properties:
@@ -922,7 +923,7 @@ angular.module('ngSharePoint').factory('SPList',
          *     };
          *     someList.getListItems(query).then(...);
          * </pre>
-         * @param {boolean=} resetPagination With this param you can specify if you want to continue with the
+         * @param {boolean=} resetPagination With this param you can specify if you want to continue with the 
          * previous query and retrieve the next set of items or want to reset the counter and start a completely new query.
          *
          * By default SharePoint returns sets of 100 items from the server. You can modify this value with the param `$top`
@@ -953,7 +954,7 @@ angular.module('ngSharePoint').factory('SPList',
          *      announcementsList.getListItems({ $filter: "Department eq 2"}).then(...);
          * </pre>
          *
-         * But if you don't know the ID and want to make the query by its title, you should expand
+         * But if you don't know the ID and want to make the query by its title, you should expand 
          * the lookup column, select the desired related column and filter the result set.
          * The query will be similar to this:
          *
@@ -983,10 +984,12 @@ angular.module('ngSharePoint').factory('SPList',
             } else {
 
                 if (query) {
+	    		/*
                     if (query.$expand !== void 0) {
                         // previous expanded
                         query.$expand = query.$expand.substring(0, query.$expand.lastIndexOf(defaultExpandProperties));
                     }
+		    */
                     query.$expand = defaultExpandProperties + (query.$expand ? ',' + query.$expand : '');
                 } else {
                     query = {
@@ -1062,11 +1065,91 @@ angular.module('ngSharePoint').factory('SPList',
 
         /**
          * @ngdoc function
+         * @name ngSharePoint.SPList#getListItemsCAML
+         * @methodOf ngSharePoint.SPList
+         *
+         * @description
+         * Use this method to retrieve a collection of items from the list using the SharePoint API REST method `GetItems`
+         * that uses a CAML query.
+         *
+         * This method has a `caml` parameter that allows you to define the CAMl query to use.
+         *
+         */
+        SPListObj.prototype.getListItemsCAML = function(caml) {
+
+            var self = this;
+            var def = $q.defer();
+            var executor = new SP.RequestExecutor(self.web.url);
+
+            var payload = {
+                'query': {
+                    '__metadata': { 'type': 'SP.CamlQuery' },
+                    'ViewXml': caml
+                }
+            };
+
+            var headers = {
+                "Accept": "application/json; odata=verbose",
+                "Content-Type": "application/json;odata=verbose",
+            };
+
+            // Get SharePoint REQUESTDIGEST value.
+            var requestDigest = document.getElementById('__REQUESTDIGEST');
+            // Remote apps that use OAuth can get the form digest value from the http://<site url>/_api/contextinfo endpoint.
+            // SharePoint-hosted apps can get the value from the #__REQUESTDIGEST page control if it's available on the SharePoint page.
+
+            if (requestDigest !== null) {
+                headers['X-RequestDigest'] = requestDigest.value;
+            }
+
+
+            // Make the call.
+            // ----------------------------------------------------------------------------
+            executor.executeAsync({
+
+                url: self.apiUrl + '/getitems',
+                method: 'POST',
+                body: angular.toJson(payload),
+                headers: headers,
+
+                success: function(data) {
+
+                    var d = utils.parseSPResponse(data);
+
+                    def.resolve(d);
+                },
+
+                error: function(data, errorCode, errorMessage) {
+
+                    var err = utils.parseError({
+                        data: data,
+                        errorCode: errorCode,
+                        errorMessage: errorMessage
+                    });
+
+                    def.reject(err);
+                }
+            });
+
+
+        }; // getListItemsCAML
+
+
+
+
+
+        /**
+         * @ngdoc function
          * @name ngSharePoint.SPList#getItemById
          * @methodOf ngSharePoint.SPList
          *
          * @description
          * This method gets a specified list item.
+         * **NOTE**: For external lists, must implement the method `getItemByStringId`.
+         * i.e.: http://<your_server>/_api/web/Lists/GetByTitle('<your_list_title>')/getitembystringid('<your_item_id>').
+         * 
+         * In external lists all the SharePoint item Id's are zero (0) and the id used to get an item is an special
+         * identifier similar to `__bd800013003300`.
          *
          * @param {integer} ID The ID of the item to be retrieved.
          * @param {string} expandProperties Comma separated values with the properties to expand
@@ -1103,7 +1186,7 @@ angular.module('ngSharePoint').factory('SPList',
             var executor = new SP.RequestExecutor(self.web.url);
             var defaultExpandProperties = 'ContentType,File,File/ParentFolder,Folder,Folder/ParentFolder';
             var query = {
-                $expand: defaultExpandProperties + (expandProperties ? ',' + expandProperties : '')
+                $expand: defaultExpandProperties + (expandProperties ? ', ' + expandProperties : '')
             };
 
             executor.executeAsync({
@@ -1151,6 +1234,101 @@ angular.module('ngSharePoint').factory('SPList',
 
 
 
+        /**
+         * @ngdoc function
+         * @name ngSharePoint.SPList#getItemByStringId
+         * @methodOf ngSharePoint.SPList
+         *
+         * @description
+         * This method gets a specified list item by its *string* id.
+         * 
+         * @param {string} ID The ID of the item to be retrieved.
+         *
+         * In external lists all the SharePoint item Id's are zero (0) and the id used to get an item is an special
+         * identifier stored in the item property `BdcIdentity`. Use this id to get an item from an external list.
+         *
+         * @param {string} expandProperties Comma separated values with the properties to expand in the REST query.
+         *
+         * @returns {promise} promise with an object of type {@link ngSharePoint.SPListItem SPListItem} corresponding
+         * with the element retrieved
+         *
+         * @example
+         * This example retrieves the item specified by the query string over the contextual list.
+         * This assumes that this code is executed in a form page
+         * <pre>
+         *      var itemID = utils.getQueryStringParamByName('ID');
+         *
+         *      SharePoint.getCurrentWeb().then(function(web) {
+         *
+         *          web.getList(_spPageContextInfo.pageListId).then(function(list) {
+         *
+         *              list.getItemByStringId('1').then(function(item) {
+         *
+         *                  $scope.currentItem = item;
+         *
+         *              });
+         *
+         *          });
+         *
+         *      });
+         *
+         * </pre>
+         *
+         */
+        SPListObj.prototype.getItemByStringId = function(stringId, expandProperties) {
+
+            var self = this;
+            var def = $q.defer();
+            var executor = new SP.RequestExecutor(self.web.url);
+            var defaultExpandProperties = 'ContentType,File,File/ParentFolder,Folder,Folder/ParentFolder';
+            var query = {
+                $expand: defaultExpandProperties + (expandProperties ? ', ' + expandProperties : '')
+            };
+
+            executor.executeAsync({
+
+                url: self.apiUrl + '/getitembystringid(\'' + stringId + '\')' + utils.parseQuery(query),
+                method: 'GET',
+                headers: {
+                    "Accept": "application/json; odata=verbose"
+                },
+
+                success: function(data) {
+
+                    var d = utils.parseSPResponse(data);
+
+                    if (d.File !== undefined && d.File.__deferred === undefined) {
+                        var newFile = SPObjectProvider.getSPFile(self.web, d.File.ServerRelativeUrl, d.File);
+                        newFile.List = self;
+                        d.File = newFile;
+                    }
+                    if (d.Folder !== undefined && d.Folder.__deferred === undefined) {
+                        var newFolder = SPObjectProvider.getSPFolder(self.web, d.Folder.ServerRelativeUrl, d.Folder);
+                        newFolder.List = self;
+                        d.Folder = newFolder;
+                    }
+
+                    var spListItem = new SPListItem(self, d);
+                    def.resolve(spListItem);
+                },
+
+                error: function(data, errorCode, errorMessage) {
+
+                    var err = utils.parseError({
+                        data: data,
+                        errorCode: errorCode,
+                        errorMessage: errorMessage
+                    });
+
+                    def.reject(err);
+                }
+            });
+
+            return def.promise;
+
+        };
+
+
 
         /**
          * @ngdoc function
@@ -1180,7 +1358,7 @@ angular.module('ngSharePoint').factory('SPList',
          *   // This returns the manager of the department (item)
          *   list.getItemProperty(ID, 'Department/Manager').then(...)
          *
-         *   // This returns the EMail of the manager's department for the
+         *   // This returns the EMail of the manager's department for the 
          *   // user who has created the item
          *   list.getItemProperty(ID, 'Created/Department/Manager/EMail');
          * </pre>
@@ -1250,23 +1428,22 @@ angular.module('ngSharePoint').factory('SPList',
                 return def.promise;
             }
 
-            var listGuid = self.Id;
-
-            self.context = new SP.ClientContext(self.web.url);
-            var web = self.context.get_web();
+            var context = new SP.ClientContext(self.web.url);
+            var web = context.get_web();
+            var list;
 
             if (self.Id !== void 0) {
-                self._list = web.get_lists().getById(self.Id);
+                list = web.get_lists().getById(self.Id);
             } else {
-                self._list = web.get_lists().getByTitle(self.listName);
+                list = web.get_lists().getByTitle(self.listName);
             }
 
-            self.context.load(self._list, 'DefaultViewUrl');
+            context.load(list, 'DefaultViewUrl');
 
-            self.context.executeQueryAsync(function() {
+            context.executeQueryAsync(function() {
 
 
-                self.defaultViewUrl = self._list.get_defaultViewUrl();
+                self.defaultViewUrl = list.get_defaultViewUrl();
                 def.resolve(self.defaultViewUrl);
 
 
@@ -1318,23 +1495,22 @@ angular.module('ngSharePoint').factory('SPList',
                 return def.promise;
             }
 
-            var listGuid = self.Id;
-
-            self.context = new SP.ClientContext(self.web.url);
-            var web = self.context.get_web();
+            var context = new SP.ClientContext(self.web.url);
+            var web = context.get_web();
+            var list;
 
             if (self.Id !== void 0) {
-                self._list = web.get_lists().getById(self.Id);
+                list = web.get_lists().getById(self.Id);
             } else {
-                self._list = web.get_lists().getByTitle(self.listName);
+                list = web.get_lists().getByTitle(self.listName);
             }
 
-            self.context.load(self._list, 'DefaultEditFormUrl');
+            context.load(list, 'DefaultEditFormUrl');
 
-            self.context.executeQueryAsync(function() {
+            context.executeQueryAsync(function() {
 
 
-                self.defaultEditFormUrl = self._list.get_defaultEditFormUrl();
+                self.defaultEditFormUrl = list.get_defaultEditFormUrl();
                 def.resolve(self.defaultEditFormUrl);
 
 
@@ -1386,23 +1562,22 @@ angular.module('ngSharePoint').factory('SPList',
                 return def.promise;
             }
 
-            var listGuid = self.Id;
-
-            self.context = new SP.ClientContext(self.web.url);
-            var web = self.context.get_web();
+            var context = new SP.ClientContext(self.web.url);
+            var web = context.get_web();
+            var list;
 
             if (self.Id !== void 0) {
-                self._list = web.get_lists().getById(self.Id);
+                list = web.get_lists().getById(self.Id);
             } else {
-                self._list = web.get_lists().getByTitle(self.listName);
+                list = web.get_lists().getByTitle(self.listName);
             }
 
-            self.context.load(self._list, 'DefaultDisplayFormUrl');
+            context.load(list, 'DefaultDisplayFormUrl');
 
-            self.context.executeQueryAsync(function() {
+            context.executeQueryAsync(function() {
 
 
-                self.defaultDisplayFormUrl = self._list.get_defaultDisplayFormUrl();
+                self.defaultDisplayFormUrl = list.get_defaultDisplayFormUrl();
                 def.resolve(self.defaultDisplayFormUrl);
 
 
@@ -1454,23 +1629,22 @@ angular.module('ngSharePoint').factory('SPList',
                 return def.promise;
             }
 
-            var listGuid = self.Id;
-
-            self.context = new SP.ClientContext(self.web.url);
-            var web = self.context.get_web();
+            var context = new SP.ClientContext(self.web.url);
+            var web = context.get_web();
+            var list;
 
             if (self.Id !== void 0) {
-                self._list = web.get_lists().getById(self.Id);
+                list = web.get_lists().getById(self.Id);
             } else {
-                self._list = web.get_lists().getByTitle(self.listName);
+                list = web.get_lists().getByTitle(self.listName);
             }
 
-            self.context.load(self._list, 'DefaultNewFormUrl');
+            context.load(list, 'DefaultNewFormUrl');
 
-            self.context.executeQueryAsync(function() {
+            context.executeQueryAsync(function() {
 
 
-                self.defaultNewFormUrl = self._list.get_defaultNewFormUrl();
+                self.defaultNewFormUrl = list.get_defaultNewFormUrl();
                 def.resolve(self.defaultNewFormUrl);
 
 

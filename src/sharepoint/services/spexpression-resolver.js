@@ -70,236 +70,264 @@
  * 
  */
 
-angular.module('ngSharePoint').provider('SPExpressionResolver', 
+angular
+    .module('ngSharePoint')
+    .provider('SPExpressionResolver', SPExpressionResolver_Provider);
 
-    [
+SPExpressionResolver_Provider.$inject = [];
 
-    function SPExpressionResolver_Provider() {
+function SPExpressionResolver_Provider() {
 
-        'use strict';
+    'use strict';
 
-        var CustomExpresionProviders = {
-            /*
-            'currentUser': 'SPExpressionResolvercurrentUser',
-            'currentUser': 'otherCurrentUserProvider'
-            */
-        };
-
-        var SPExpressionResolver = function($injector, $q, SharePoint, $parse) {
-
-            //var OLD_EXPRESSION_REGEXP = /{\b([\w+( |.)]*|[\[\w+\]]*)}/g;
-            var EXPRESSION_REGEXP = /{(\w+\W*[\w\s./\[\]\(\)]+)}(?!})/g; //-> Faster but less accurate
-            //var EXPRESSION_REGEXP = /{(\w+?(?:[.\/\[](?! )[\w \]]*?)+?)}(?!})/g; //-> More accurate but slower
-            var PARTS_REGEXP = /[\[./]([\w )]+)/g;
+    var self = this;
+    var CustomExpresionProviders = {
+        /*
+        'currentUser': 'SPExpressionResolvercurrentUser',
+        'currentUser': 'otherCurrentUserProvider'
+        */
+    };
 
 
-            // ****************************************************************************
-            // Private methods
-            //
+    var SPExpressionResolver = function($injector, $q, SharePoint, $parse) {
 
-            function resolveExpression(expressionsArray, scope, index, deferred) {
-
-                index = index || 0;
-                deferred = deferred || $q.defer();
-
-                var expression = expressionsArray[index++];
-
-                if (expression === void 0) {
-
-                    deferred.resolve();
-                    return deferred.promise;
-                }
+        //var OLD_EXPRESSION_REGEXP = /{\b([\w+( |.)]*|[\[\w+\]]*)}/g;
+        var EXPRESSION_REGEXP = /{(\w+\W*[\w\s./\[\]\(\)]+)}(?!})/g; //-> Faster but less accurate
+        //var EXPRESSION_REGEXP = /{(\w+?(?:[.\/\[](?! )[\w \]]*?)+?)}(?!})/g; //-> More accurate but slower
+        var PARTS_REGEXP = /[\[./]([\w )]+)/g;
 
 
-                // Extract the expression type.
-                var expressionType = expression.substring(0, expression.indexOf(/\W/.exec(expression)));
+        // ****************************************************************************
+        // Private methods
+        //
 
-                var expressionProviderName = 'SPExpressionResolver' + expressionType;
-                if (CustomExpresionProviders[expressionType] !== void 0) {
-                    expressionProviderName = CustomExpresionProviders[expressionType];
-                }
+        function resolveExpression(expressionsArray, scope, index, deferred) {
 
-                var service = $injector.get(expressionProviderName);
-                var expressionPromise = service.resolve(expression, scope);
+            index = index || 0;
+            deferred = deferred || $q.defer();
 
-                // Resolve/Reject the current expression promise
-                $q.when(expressionPromise).then(function(result) {
+            var expression = expressionsArray[index++];
 
-                    // Sets the resolved value for the current expression
-                    expressionsArray[index - 1] = result;
+            if (expression === void 0) {
 
-                    // Resolve next expression
-                    resolveExpression(expressionsArray, scope, index, deferred);
-
-                }, function(result) {
-
-                    // Even with a promise rejection, sets the result in the current expression
-                    expressionsArray[index - 1] = result;
-                    
-                    // Resolve next expression
-                    resolveExpression(expressionsArray, scope, index, deferred);
-
-                });
-
-
+                deferred.resolve();
                 return deferred.promise;
             }
 
 
+            // Extract the expression type.
+            var expressionType = expression.substring(0, expression.indexOf(/\W/.exec(expression)));
+            /*
+            var expressionPromise;
 
-            function getExpressionParts(text) {
+            switch (expressionType) {
 
-                var matches = [];
-                var match;
+                case 'param':
+                    var paramName = getExpressionParts(expression)[0];
+                    expressionPromise = utils.getQueryStringParamByName(paramName);
+                    break;
 
-                while ((match = PARTS_REGEXP.exec(text))) {
+                case 'item':
+                    expressionPromise = resolveItemExpression(expression, scope);
+                    break;
 
-                    match.shift();
-                    matches.push(match.join(''));
-                }
+                case 'currentUser':
+                    expressionPromise = resolveCurrentUserExpression(expression);
+                    break;
 
-                return matches;
+                case 'fn':
+                    var functionExpression = /\W(.*)/.exec(expression)[1];
+                    expressionPromise = resolveFunctionExpression(functionExpression, scope);
+                    break;
+
+            }
+        	*/
+	
+            var expressionProviderName = 'SPExpressionResolver' + expressionType;
+            if (CustomExpresionProviders[expressionType] !== void 0) {
+                expressionProviderName = CustomExpresionProviders[expressionType];
             }
 
+            var service = $injector.get(expressionProviderName);
+            var expressionPromise = service.resolve(expression, scope);
+
+            // Resolve/Reject the current expression promise
+            $q.when(expressionPromise).then(function(result) {
+
+                // Sets the resolved value for the current expression
+                expressionsArray[index - 1] = result;
+
+                // Resolve next expression
+                resolveExpression(expressionsArray, scope, index, deferred);
+
+            }, function(result) {
+
+                // Even with a promise rejection, sets the result in the current expression
+                expressionsArray[index - 1] = result;
+                
+                // Resolve next expression
+                resolveExpression(expressionsArray, scope, index, deferred);
+
+            });
 
 
-            function resolveItemExpression(expression, scope) {
+            return deferred.promise;
+        }
 
-                var queryParts = getExpressionParts(expression);
 
-                if (queryParts.length == 1) {
 
-                    return scope.item[queryParts[0]];
+        function getExpressionParts(text) {
 
-                } else {
+            var matches = [];
+            var match;
 
-                    return scope.item.list.getItemProperty(scope.item.Id, queryParts.join('/')).then(function(data) {
+            while ((match = PARTS_REGEXP.exec(text))) {
+
+                match.shift();
+                matches.push(match.join(''));
+            }
+
+            return matches;
+        }
+
+
+
+        function resolveItemExpression(expression, scope) {
+
+            var queryParts = getExpressionParts(expression);
+
+            if (queryParts.length == 1) {
+
+                return scope.item[queryParts[0]];
+
+            } else {
+
+                return scope.item.list.getItemProperty(scope.item.Id, queryParts.join('/')).then(function(data) {
+
+                    return data[queryParts[queryParts.length - 1]];
+            
+                }, function() {
+
+                    return undefined;
+                });
+            }
+            
+        }
+
+
+
+        function resolveCurrentUserExpression(expression) {
+
+            return SharePoint.getCurrentWeb().then(function(web) {
+            
+                return web.getList('UserInfoList').then(function(list) {
+
+                    var queryParts = getExpressionParts(expression);
+
+                    return list.getItemProperty(_spPageContextInfo.userId, queryParts.join('/')).then(function(data) {
 
                         return data[queryParts[queryParts.length - 1]];
-                
+
                     }, function() {
 
                         return undefined;
                     });
-                }
-                
-            }
-
-
-
-            function resolveCurrentUserExpression(expression) {
-
-                return SharePoint.getCurrentWeb().then(function(web) {
-                
-                    return web.getList('UserInfoList').then(function(list) {
-
-                        var queryParts = getExpressionParts(expression);
-
-                        return list.getItemProperty(_spPageContextInfo.userId, queryParts.join('/')).then(function(data) {
-
-                            return data[queryParts[queryParts.length - 1]];
-
-                        }, function() {
-
-                            return undefined;
-                        });
-                    });
                 });
-            }
+            });
+        }
 
 
 
-            function resolveFunctionExpression(functionExpression, scope) {
+        function resolveFunctionExpression(functionExpression, scope) {
 
-                return scope.$eval($parse(functionExpression));
+            return scope.$eval($parse(functionExpression));
 
-            }
+        }
 
 
 
-            // ****************************************************************************
-            // Public methods (Service API)
-            //
+        // ****************************************************************************
+        // Public methods (Service API)
+        //
 
-            /**
-             * @ngdoc function
-             * @name ngSharePoint.SPExpressionResolver#resolve
-             * @methodOf ngSharePoint.SPExpressionResolver
-             * 
-             * @description
-             * This method solves all expressions contained within the text received as parameter.
-             *
-             * @param {string} Text expression to solve
-             * @param {object} scope with the context where `expressions` values will be placed.
-             * @returns {promise} Promise with the solved expressions
-             * 
-             * @example
-             * <pre>
-             * var textToEvaluate = '{currentUser.Id}=={item.Author.Id} and {params.Close}=="Yes"';
-             * SPExpressionResolver.resolve(textToEvaluate, $scope).then(function(sentence) {
-             *
-             *      // At this point, expressions are solved and scope variables created
-             *      // We can evaluate the sentence
-             *
-             *      if ($scope.$eval(sentence)) {
-             *
-             *          // The current user is the author of the current item and exists
-             *          // a page param equals to `Yes`
-             *      }
-             *  });
-             * </pre>
-             */
-            this.resolve = function(text, scope) {
+        /**
+         * @ngdoc function
+         * @name ngSharePoint.SPExpressionResolver#resolve
+         * @methodOf ngSharePoint.SPExpressionResolver
+         * 
+         * @description
+         * This method solves all expressions contained within the text received as parameter.
+         *
+         * @param {string} Text expression to solve
+         * @param {object} scope with the context where `expressions` values will be placed.
+         * @returns {promise} Promise with the solved expressions
+         * 
+         * @example
+         * <pre>
+         * var textToEvaluate = '{currentUser.Id}=={item.Author.Id} and {params.Close}=="Yes"';
+         * SPExpressionResolver.resolve(textToEvaluate, $scope).then(function(sentence) {
+         *
+         *      // At this point, expressions are solved and scope variables created
+         *      // We can evaluate the sentence
+         *
+         *      if ($scope.$eval(sentence)) {
+         *
+         *          // The current user is the author of the current item and exists
+         *          // a page param equals to `Yes`
+         *      }
+         *  });
+         * </pre>
+         */
+        self.resolve = function(text, scope) {
 
-                var deferred = $q.defer();
-                var expressionsArray = [];
+            var deferred = $q.defer();
+            var expressionsArray = [];
 
-                if (angular.isString(text)) {
-                    
-                    // Use 'replace' function to extract the expressions and replace them for {e:1} to {e:n}.
-                    text = text.replace(EXPRESSION_REGEXP, function(match, p1, offset, originalText) {
+            if (angular.isString(text)) {
+                
+                // Use 'replace' function to extract the expressions and replace them for {e:1} to {e:n}.
+                text = text.replace(EXPRESSION_REGEXP, function(match, p1, offset, originalText) {
 
-                        // Check if the expression is already added.
-                        // This way resolves the expression only once and replaces it in all places 
-                        // where appears in the text.
-                        var pos = expressionsArray.indexOf(p1);
+                    // Check if the expression is already added.
+                    // This way resolves the expression only once and replaces it in all places 
+                    // where appears in the text.
+                    var pos = expressionsArray.indexOf(p1);
 
-                        if (pos == -1) {
-                            expressionsArray.push(p1);
-                            pos = expressionsArray.length - 1;
-                        }
-
-                        return '{e:' + pos + '}';
-
-                    });
-
-                }
-
-                // Resolve the 'expressionsArray' with promises
-                resolveExpression(expressionsArray, scope).then(function() {
-
-                    // Replace {e:1} to {e:n} in the 'text' with the corresponding resolved expressions values.
-                    for (var i = 0; i < expressionsArray.length; i++) {
-                        text = text.replace(new RegExp('{e:' + i + '}', 'g'), expressionsArray[i]);
+                    if (pos == -1) {
+                        expressionsArray.push(p1);
+                        pos = expressionsArray.length - 1;
                     }
 
-                    // Resolve the main promise
-                    deferred.resolve(text);
+                    return '{e:' + pos + '}';
 
                 });
 
+            }
 
-                return deferred.promise;
+            // Resolve the 'expressionsArray' with promises
+            resolveExpression(expressionsArray, scope).then(function() {
 
-            }; // resolve method
+                // Replace {e:1} to {e:n} in the 'text' with the corresponding resolved expressions values.
+                for (var i = 0; i < expressionsArray.length; i++) {
+                    text = text.replace(new RegExp('{e:' + i + '}', 'g'), expressionsArray[i]);
+                }
 
-        };
+                // Resolve the main promise
+                deferred.resolve(text);
+
+            });
 
 
-        this.$get = function($injector, $q, SharePoint, $parse) {
-            return new SPExpressionResolver($injector, $q, SharePoint, $parse);
-        };
+            return deferred.promise;
 
-    }
+        }; // resolve method
 
-]);
+    };
+
+
+    self.$get = function($injector, $q, SharePoint, $parse) {
+        return new SPExpressionResolver($injector, $q, SharePoint, $parse);
+    };
+
+}
+

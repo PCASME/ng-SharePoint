@@ -105,7 +105,7 @@ angular.module('ngSharePoint').provider('SPConfig',
                         if (angular.isArray(resources)) {
 
                             // Process the array of resources filenames
-                            anfular.forEach(resources, function(resource) {
+                            angular.forEach(resources, function(resource) {
                                 
                                 if (angular.isString(resource)) {
 
