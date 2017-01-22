@@ -36,6 +36,8 @@
         var spRibbonService = {
 
             instance: null,
+            pageManager: null,
+            commandDispatcher: null,
             getInstance: getInstance,
             ready: ready,
             refresh: refresh,
@@ -52,7 +54,8 @@
             getStructure: getStructure,
             createToolbar: createToolbar,
             addButtonToToolbar: addButtonToToolbar,
-            registerCommand: registerCommand
+            registerCommand: registerCommand,
+            removeCommand: removeCommand
 
         };
 
@@ -71,8 +74,10 @@
             commandDispatcher = pageManager.get_commandDispatcher();
 
             spRibbonService.instance = ribbon;
-            ribbonReady = true;
+            spRibbonService.pageManager = pageManager;
+            spRibbonService.commandDispatcher = commandDispatcher;
 
+            ribbonReady = true;
             ribbonDeferred.resolve();
 
         } // onRibbonInited
@@ -515,6 +520,36 @@
             }
 
         } // registerCommand
+
+
+
+        function removeCommand(componentId, commands) {
+
+            //var cmds = [].concat(commands).filter(Boolean);
+            var cmds = _validateCommands(commands);
+            var component = pageManager.getPageComponentById(componentId);
+
+            if (component && cmds) {
+
+                cmds.forEach(function (commandId) {
+
+                    if (Array.contains(component.getCommands(), commandId)) {
+
+                        // Hard hack to remove the command from the component.
+                        delete component._controlData[commandId];
+                        ribbon.refresh();
+
+                    }
+
+                });
+
+                return true;
+
+            }
+
+            return false;
+
+        } // removeCommand
 
 
 
