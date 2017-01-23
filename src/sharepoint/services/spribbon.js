@@ -764,6 +764,36 @@
             };
 
 
+
+            // NOTE: The 'pageManager.$2o_1' property is an object that contains all the components 
+            //       by name and we could try to get the correct component id (WebPartWPQ?) from it but 
+            //       we can't ensure that this property ($2o_1) always will have this name.
+            //
+            var defaultPageComponentId = 'WebPartWPQ2';
+            var defaultPageComponentIdFoundation = 'WebPartWPQ1';
+
+            /* 
+                NOTE2: The page object '_spWebPartComponents' have all the components loaded in a web parts page (ListViewWebPart/ListFormWebPart).
+                       For non web part page this object is empty (have no properties/components).
+                       Use the next instruction to get the first one:
+            
+                            var pageComponentId = typeof _spWebPartComponents !== 'undefined' && (_spWebPartComponents[Object.keys(_spWebPartComponents)[0]] || { pageComponentId: 'WebPartWPQ2' }).pageComponentId;
+            
+                       Or the verbose solution:
+            
+                            // Gets the first property name from the object '_spWebPartComponents'.
+                            var firstObjectProperty = typeof _spWebPartComponents !== 'undefined' && Object.keys(_spWebPartComponents)[0];
+                            
+                            // Gets the value of the first property from the object '_spWebPartComponents' (the first component object).
+                            var component = _spWebPartComponents[firstObjectProperty];
+
+                            // Gets the 'pageComponentId' property from the component object.
+                            // If the property 'pageComponentId' doesn't exists in the object,
+                            // assumes the standard component id 'WebPartWPQ2'.
+                            var pageComponentId = component && component.pageComponentId || 'WebPartWPQ2';
+            */
+
+
             // Unregister the default 'save', 'cancel' and 'attach file' commands
             unregisterComponentCommands('WebPartWPQ2', 'Ribbon.ListForm.Edit.Commit.Publish');
             unregisterComponentCommands('WebPartWPQ2', 'Ribbon.ListForm.Edit.Commit.Cancel');
@@ -773,11 +803,6 @@
             unregisterComponentCommands('WebPartWPQ1', 'Ribbon.ListForm.Edit.Commit.Publish');
             unregisterComponentCommands('WebPartWPQ1', 'Ribbon.ListForm.Edit.Commit.Cancel');
             unregisterComponentCommands('WebPartWPQ1', 'Ribbon.ListForm.Edit.Actions.AttachFile');
-
-            // NOTE: The 'pageManager.$2o_1' property is an object that contains all the components 
-            //       by name and we could try to get the correct component id (WebPartWPQ?) from it but we can't 
-            //       ensure that this property ($2o_1) always will have this name.
-            //
 
 
             // Register classes and initialize page component
