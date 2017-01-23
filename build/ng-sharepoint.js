@@ -7700,6 +7700,8 @@ angular.module('ngSharePoint').factory('SPObjectProvider',
             addLayoutToGroup            : addLayoutToGroup,
             addSectionToLayout          : addSectionToLayout,
             addButtonToSection          : addButtonToSection,
+            showEditingTools            : showEditingTools,
+            executeCommand              : executeCommand,
             registerComponentCommands   : registerComponentCommands,
             unregisterComponentCommands : unregisterComponentCommands,
             getStructure                : getStructure,
@@ -7971,6 +7973,34 @@ angular.module('ngSharePoint').factory('SPObjectProvider',
             return commandDispatcher.executeCommand(commandId, properties);
 
         } // showEditingTools
+
+
+
+        function executeCommand(commandId, properties) {
+
+            /*
+                If you need to know what is the name (commandId) of your desired button, please find here:
+
+                    https://msdn.microsoft.com/en-us/library/office/ee537543(v=office.14).aspx or https://msdn.microsoft.com/en-us/library/office/bb802730(v=office.15).aspx
+
+                Or in this path directory in front-end server: 
+
+                    %ProgramFiles%\Common Files\Microsoft Shared\web server extensions\15\TEMPLATE\GLOBAL\XML\CMDUI.xml
+                    
+            */
+
+            try {
+
+                commandDispatcher.executeCommand(commandId, properties || null);
+
+            } catch (e) {
+
+                console.error('SPRibbon.executeCommand failed!');
+                console.error(e);
+                
+            }
+
+        } // executeCommand
 
 
 
