@@ -14,16 +14,23 @@
 //  newlines
 ///////////////////////////////////////
 
-angular.module('ngSharePoint').filter('newlines', 
+;(function() {
 
-    ['$sce', 
+    angular
+        .module('ngSharePoint')
+        .filter('newlines', newlines_Filter);
 
+    newlines_Filter.$inject = ['$sce'];
+
+
+    /* @ngInject */
     function newlines_Filter($sce) {
 
         return function(text) {
 
             return $sce.trustAsHtml((text || '').replace(/\n\r?/g, '<br/>'));
         };
-        
+
     }
-]);
+
+})();

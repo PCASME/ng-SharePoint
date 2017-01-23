@@ -1,4 +1,3 @@
-
 /**
  * @ngdoc overview
  * @name ngSharePoint
@@ -22,32 +21,42 @@
  * @copyright Copyright (c) 2014
  */
 
-angular.module('ngSharePoint', ['CamlHelper']);
+;(function() {
+
+	angular
+		.module('ngSharePoint', [/*'CamlHelper'*/]);
 
 
+	angular
+		.module('ngSharePoint')
+		.config(ngSharePoint_Config);
+
+	ngSharePoint_Config.$inject = ['$compileProvider'];
 
 
-angular.module('ngSharePoint').config(['$compileProvider', function($compileProvider) {
+    /* @ngInject */
+	function ngSharePoint_Config($compileProvider) {
 
-	// Reconfigure the RegExp for aHrefSanitizationWhiteList to accept 'javascript'.
-	$compileProvider.aHrefSanitizationWhitelist(/^\s*(https?|ftp|mailto|file|javascript):/);
-	/* NOTE: The previous statement is for angular versions 1.2.8 and above.
-	 *		 For version 1.0.5 or 1.1.3 please use the next statement:
-	 *
-	 *				$compileProvider.urlSanitizationWhitelist(/^\s*(https?|ftp|mailto|file|javascript):/);
-	 *
+		// Reconfigure the RegExp for aHrefSanitizationWhiteList to accept 'javascript'.
+		$compileProvider.aHrefSanitizationWhitelist(/^\s*(https?|ftp|mailto|file|javascript):/);
+		/* NOTE: The previous statement is for angular versions 1.2.8 and above.
+		 *		 For version 1.0.5 or 1.1.3 please use the next statement:
+		 *
+		 *				$compileProvider.urlSanitizationWhitelist(/^\s*(https?|ftp|mailto|file|javascript):/);
+		 *
+		 */
+
+	}
+
+
+	/** 
+	 * Module constants
 	 */
+	angular
+		.module('ngSharePoint')
+		.value('Constants', {
+			errorTemplate: 'templates/error.html',
+			userProfileUrl: '_layouts/userdisp.aspx?ID='
+		});
 
-}]);
-
-
-
-
-/** 
- * Module constants
- */
-angular.module('ngSharePoint').value('Constants', {
-	errorTemplate: 'templates/error.html',
-	userProfileUrl: '_layouts/userdisp.aspx?ID='
-});
-
+})();

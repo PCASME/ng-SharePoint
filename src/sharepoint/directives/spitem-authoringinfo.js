@@ -14,7 +14,7 @@
 //  SPItemAuthoringinfo
 ///////////////////////////////////////
 
-(function() {
+;(function() {
     
     'use strict';
 

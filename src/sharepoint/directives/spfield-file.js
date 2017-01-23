@@ -14,10 +14,16 @@
 //	SPFieldFile
 ///////////////////////////////////////
 
-angular.module('ngSharePoint').directive('spfieldFile', 
+;(function() {
 
-	['SPFieldDirective', '$q', '$http', '$templateCache', '$compile',
+	angular
+		.module('ngSharePoint')
+		.directive('spfieldFile', spfieldFile_DirectiveFactory);
 
+	spfieldFile_DirectiveFactory.$inject = ['SPFieldDirective', '$q', '$http', '$templateCache', '$compile'];
+
+
+    /* @ngInject */
 	function spfieldFile_DirectiveFactory(SPFieldDirective, $q, $http, $templateCache, $compile) {
 
 		var spfieldFile_DirectiveDefinitionObject = {
@@ -33,75 +39,75 @@ angular.module('ngSharePoint').directive('spfieldFile',
 
 			link: function($scope, $element, $attrs, controllers) {
 
-				var directive = {
-					
-					fieldTypeName: 'file',
-					replaceAll: false,
+					var directive = {
 
-					watchModeFn: function(newValue) {
+						fieldTypeName: 'file',
+						replaceAll: false,
 
-						if ($scope.name === 'FileLeafRef') {
+						watchModeFn: function(newValue) {
 
-							$scope.fileName = $scope.item.File.Name;
-							var idx = $scope.fileName.lastIndexOf('.');
-							if (idx === -1) {
-								$scope.value = $scope.fileName;
-								$scope.extension = '';
+							if ($scope.name === 'FileLeafRef') {
+
+								$scope.fileName = $scope.item.File.Name;
+								var idx = $scope.fileName.lastIndexOf('.');
+								if (idx === -1) {
+									$scope.value = $scope.fileName;
+									$scope.extension = '';
+								} else {
+									$scope.value = $scope.fileName.substr(0, $scope.fileName.lastIndexOf('.'));
+									$scope.extension = $scope.fileName.substr($scope.fileName.lastIndexOf('.'));
+								}
+
+								$scope.url = $scope.item.File.ServerRelativeUrl;
+
+								$scope.modelCtrl.$setViewValue($scope.value);
+
 							} else {
-								$scope.value = $scope.fileName.substr(0, $scope.fileName.lastIndexOf('.'));
-								$scope.extension = $scope.fileName.substr($scope.fileName.lastIndexOf('.'));
+								console.error('Unknown SPFile field');
+								return;
 							}
 
-							$scope.url = $scope.item.File.ServerRelativeUrl;
+							directive.renderField();
+						}
+					};
 
-							$scope.modelCtrl.$setViewValue($scope.value);
 
-						} else {
-							console.error('Unknown SPFile field');
-							return;
+					SPFieldDirective.baseLinkFn.apply(directive, arguments);
+
+					$scope.modelCtrl.$validators.pattern = function(modelValue, viewValue) {
+						// ~ " # % & * : < > ? / \ { | }.
+						var rg1 = /^[^\\\/:\*\?"<>\|\~#&{}%]+$/; // forbidden characters \ / : * ? " < > |
+						var rg2 = /^\./; // cannot start with dot (.)
+						//					var rg3=/^(nul|prn|con|lpt[0-9]|com[0-9])(\.|$)/i; 	// forbidden file names
+						var fname = modelValue || viewValue;
+
+						return rg1.test(fname) && !rg2.test(fname); // && !rg3.test(fname);
+					};
+
+
+
+					$scope.EditOrDownload = function($event) {
+
+						$event.preventDefault();
+
+						switch ($scope.extension.ltrim('.')) {
+							case 'doc':
+							case 'docx':
+							case 'xsl':
+							case 'xslx':
+							case 'ppt':
+							case 'pptx':
+								editDocumentWithProgID2($scope.url, '', 'SharePoint.OpenDocuments', '0', _spPageContextInfo.siteAbsoluteUrl, '0');
+								break;
+
+							default:
+								document.location = $scope.url;
 						}
 
-						directive.renderField();
-					}
-				};
+						return false;
+					};
 
-
-				SPFieldDirective.baseLinkFn.apply(directive, arguments);
-
-	            $scope.modelCtrl.$validators.pattern = function(modelValue, viewValue) {
-	            	// ~ " # % & * : < > ? / \ { | }.
-					var rg1=/^[^\\\/:\*\?"<>\|\~#&{}%]+$/; 				// forbidden characters \ / : * ? " < > |
-					var rg2=/^\./; 										// cannot start with dot (.)
-//					var rg3=/^(nul|prn|con|lpt[0-9]|com[0-9])(\.|$)/i; 	// forbidden file names
-					var fname = modelValue || viewValue;
-
-					return rg1.test(fname) && !rg2.test(fname); // && !rg3.test(fname);
-	            };
-
-
-
-				$scope.EditOrDownload = function($event) {
-
-		            $event.preventDefault();
-
-		            switch($scope.extension.ltrim('.')) {
-						case 'doc':
-						case 'docx':
-						case 'xsl':
-						case 'xslx':
-						case 'ppt':
-						case 'pptx':
-				            editDocumentWithProgID2($scope.url, '', 'SharePoint.OpenDocuments', '0', _spPageContextInfo.siteAbsoluteUrl, '0');
-				            break;
-
-				        default:
-				        	document.location = $scope.url;
-		            }
-
-		            return false;
-				};
-
-			} // link
+				} // link
 
 		}; // Directive definition object
 
@@ -110,4 +116,4 @@ angular.module('ngSharePoint').directive('spfieldFile',
 
 	} // Directive factory
 
-]);
+})();

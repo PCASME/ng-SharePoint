@@ -1,4 +1,3 @@
-
 /**
  * @ngdoc object
  * @name ngSharePoint.SharePoint
@@ -10,10 +9,13 @@
  * @requires ngSharePoint.SPWeb
  */
 
+;(function() {
 
-angular.module('ngSharePoint').provider('SharePoint', 
+	angular
+		.module('ngSharePoint')
+		.provider('SharePoint', SharePoint_Provider);
 
-	[
+	SharePoint_Provider.$inject = [];
 
 	function SharePoint_Provider() {
 
@@ -108,25 +110,25 @@ angular.module('ngSharePoint').provider('SharePoint',
 				SPUtils.SharePointReady().then(function() {
 
 					var executor = new SP.RequestExecutor(webServerRelativeUrl);
-	                var endpoint = '/' + webServerRelativeUrl.trimS('/') + "/_api/web/" + queryUrl.trimS('/');
+					var endpoint = '/' + webServerRelativeUrl.trimS('/') + "/_api/web/" + queryUrl.trimS('/');
 
 
 					executor.executeAsync({
 
 						url: endpoint,
-						method: 'GET', 
-						headers: { 
+						method: 'GET',
+						headers: {
 							"Accept": "application/json; odata=verbose"
-						}, 
+						},
 
 						success: function(data) {
 
 							var d = utils.parseSPResponse(data);
 							utils.cleanDeferredProperties(d);
-							
+
 							def.resolve(d);
-							
-						}, 
+
+						},
 
 						error: function(data, errorCode, errorMessage) {
 
@@ -149,10 +151,11 @@ angular.module('ngSharePoint').provider('SharePoint',
 		};
 
 
-		
+
 		this.$get = function($cacheFactory, $q, SPUtils, SPWeb) {
 			return new SharePoint($cacheFactory, $q, SPUtils, SPWeb);
 		};
 
 	}
-]);
+
+})();

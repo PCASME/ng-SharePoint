@@ -14,10 +14,16 @@
 //  SPFieldValidationMessages
 ///////////////////////////////////////
 
-angular.module('ngSharePoint').directive('spfieldValidationMessages', 
+;(function() {
 
-    [
+    angular
+        .module('ngSharePoint')
+        .directive('spfieldValidationMessages', spfieldValidationMessages_DirectiveFactory);
 
+    spfieldValidationMessages_DirectiveFactory.$inject = [];
+
+
+    /* @ngInject */
     function spfieldValidationMessages_DirectiveFactory() {
 
         var spfieldValidationMessages_DirectiveDefinitionObject = {
@@ -39,4 +45,4 @@ angular.module('ngSharePoint').directive('spfieldValidationMessages',
 
     }
 
-]);
+})();

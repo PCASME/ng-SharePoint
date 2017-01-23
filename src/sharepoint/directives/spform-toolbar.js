@@ -14,10 +14,16 @@
 //  SPFormToolbar
 ///////////////////////////////////////
 
-angular.module('ngSharePoint').directive('spformToolbar', 
+;(function() {
 
-    ['$compile', 'SPUtils', 'SPRibbon',
+    angular
+        .module('ngSharePoint')
+        .directive('spformToolbar', spformToolbar_DirectiveFactory);
 
+    spformToolbar_DirectiveFactory.$inject = ['$compile', 'SPUtils', 'SPRibbon'];
+
+
+    /* @ngInject */
     function spformToolbar_DirectiveFactory($compile, SPUtils, SPRibbon) {
 
         var spformToolbarDirectiveDefinitionObject = {
@@ -63,7 +69,7 @@ angular.module('ngSharePoint').directive('spformToolbar',
             link: function($scope, $element, $attrs, spformController, transcludeFn) {
 
                 if (spformController === null) return;
-                
+
                 $scope.formCtrl = spformController;
                 $scope.ribbonToolbar = null;
 
@@ -139,7 +145,7 @@ angular.module('ngSharePoint').directive('spformToolbar',
                                     }
 
                                 }
-                                
+
                             }
 
                         }
@@ -171,7 +177,7 @@ angular.module('ngSharePoint').directive('spformToolbar',
 
                     // Makes the transclusion
                     transcludeFn($scope, function(clone) {
-                        
+
                         // Checks if there are elements to transclude before processing the ribbon.
                         if (isRibbonNeeded(clone)) {
 
@@ -184,14 +190,14 @@ angular.module('ngSharePoint').directive('spformToolbar',
                         } else {
 
                             $scope.ribbonToolbar = null;
-                            
+
                         }
 
                         // Empty the contents
                         transcludeElement.empty();
 
                         // Iterate over clone elements and appends them to 'transcludeElement' unless the comments.
-                        angular.forEach(clone, function(elem){
+                        angular.forEach(clone, function(elem) {
 
                             if (elem.nodeType !== elem.COMMENT_NODE) {
 
@@ -208,7 +214,7 @@ angular.module('ngSharePoint').directive('spformToolbar',
                     if (transcludeElement.contents().length === 0) {
 
                         // Append default toolbar buttons
-                        switch($scope.currentMode) {
+                        switch ($scope.currentMode) {
 
                             case 'display':
                                 //transcludeElement.append($compile('<button type="button" sp-action="close">' + STSHtmlEncode(Strings.STS.L_CloseButtonCaption) + '</button>')($scope));
@@ -240,4 +246,4 @@ angular.module('ngSharePoint').directive('spformToolbar',
 
     } // Directive factory
 
-]);
+})();

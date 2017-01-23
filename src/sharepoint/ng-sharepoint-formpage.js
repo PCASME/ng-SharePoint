@@ -10,15 +10,21 @@
  * @copyright Copyright (c) 2014
  */
 
+(function() {
 
-angular.module('ngSharePointFormPage', ['ngSharePoint', 'ngSharePoint.templates', 'oc.lazyLoad']);
+    angular
+        .module('ngSharePointFormPage', ['ngSharePoint', 'ngSharePoint.templates', 'oc.lazyLoad']);
 
 
-angular.module('ngSharePointFormPage').config(
+    angular
+        .module('ngSharePointFormPage')
+        .config(ngSharePointFormPage_Config);
 
-    ['SPConfigProvider', '$ocLazyLoadProvider', 
+    ngSharePointFormPage_Config.$inject = ['SPConfigProvider', '$ocLazyLoadProvider'];
 
-    function(SPConfigProvider, $ocLazyLoadProvider) {
+
+    /* @ngInject */
+    function ngSharePointFormPage_Config(SPConfigProvider, $ocLazyLoadProvider) {
 
         SPConfigProvider.options.loadMinimalSharePointInfraestructure = false;
         //SPConfigProvider.options.forceLoadResources = true;
@@ -31,18 +37,24 @@ angular.module('ngSharePointFormPage').config(
 
         });
 
-    }
-
-]);
+    } // ngSharePointFormPage_Config
 
 
 
-angular.module('ngSharePointFormPage').directive('spformpage', 
 
-    ['SharePoint', 'SPUtils', 'SPListItem', '$q', '$http', '$templateCache', '$compile', 'ctx', '$ocLazyLoad', '$window', 
 
-    function(SharePoint, SPUtils, SPListItem, $q, $http, $templateCache, $compile, ctx, $ocLazyLoad, $window) {
-        
+
+
+    angular
+        .module('ngSharePointFormPage')
+        .directive('spformpage', spFormPage);
+
+    spFormPage.$inject = ['SharePoint', 'SPUtils', 'SPListItem', '$q', '$http', '$templateCache', '$compile', 'ctx', '$ocLazyLoad', '$window'];
+
+
+    /* @ngInject */
+    function spFormPage(SharePoint, SPUtils, SPListItem, $q, $http, $templateCache, $compile, ctx, $ocLazyLoad, $window) {
+
         return {
 
             restrict: 'EA',
@@ -69,7 +81,7 @@ angular.module('ngSharePointFormPage').directive('spformpage',
                  * View: 4
                  *
                  */
-                switch(ctx.ControlMode) {
+                switch (ctx.ControlMode) {
 
                     case SPClientTemplates.ClientControlMode.Invalid:
                         controlMode = 'invalid';
@@ -241,7 +253,7 @@ angular.module('ngSharePointFormPage').directive('spformpage',
                             console.log('Error item', err);
 
                         });
-                        
+
                     }
 
                     return deferred.promise;
@@ -269,7 +281,9 @@ angular.module('ngSharePointFormPage').directive('spformpage',
 
 
                     // Check if the 'templateUrl' is valid, i.e. the template exists.
-                    $http.get(templateUrl, { cache: $templateCache }).success(function(html) {
+                    $http.get(templateUrl, {
+                        cache: $templateCache
+                    }).success(function(html) {
 
                         // Returns the 'templateUrl'
                         deferred.resolve(templateUrl);
@@ -297,7 +311,7 @@ angular.module('ngSharePointFormPage').directive('spformpage',
 
                     // TODO: Hacer un $http para comprobar que exista el script de definición.
                     //       Si no existe, generar error? utilizar uno vacío? ... ???
-                    
+
                     SP.SOD.registerSod('formDefinition', $scope.web.url.rtrim('/') + '/ngSharePointFormTemplates/' + $scope.list.Title + '-' + ctx.ListData.Items[0].ContentType + '-definition.js');
 
                     SP.SOD.executeFunc('formDefinition', null, function() {
@@ -347,7 +361,7 @@ angular.module('ngSharePointFormPage').directive('spformpage',
                         } else {
 
                             deferred.resolve({});
-                            
+
                         }
 
                     });
@@ -366,7 +380,7 @@ angular.module('ngSharePointFormPage').directive('spformpage',
 
                         if (angular.isArray(module.files)) {
 
-                            for(var r=0; r < module.files.length; r++) {
+                            for (var r = 0; r < module.files.length; r++) {
 
                                 module.files[r] = module.files[r].replace(/~site/g, $scope.web.url.rtrim('/'));
                             }
@@ -384,8 +398,6 @@ angular.module('ngSharePointFormPage').directive('spformpage',
 
         };
 
-    }
+    } // spFormPage directive
 
-]);
-
-
+})();

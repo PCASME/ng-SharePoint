@@ -14,10 +14,16 @@
 //  SPFieldMultiChoice
 ///////////////////////////////////////
 
-angular.module('ngSharePoint').directive('spfieldMultichoice',
+;(function() {
 
-    ['SPFieldDirective',
+    angular
+        .module('ngSharePoint')
+        .directive('spfieldMultichoice', spfieldMultichoice_DirectiveFactory);
 
+    spfieldMultichoice_DirectiveFactory.$inject = ['SPFieldDirective'];
+
+
+    /* @ngInject */
     function spfieldMultichoice_DirectiveFactory(SPFieldDirective) {
 
         var spfieldMultichoice_DirectiveDefinitionObject = {
@@ -34,167 +40,171 @@ angular.module('ngSharePoint').directive('spfieldMultichoice',
             link: function($scope, $element, $attrs, controllers) {
 
 
-                var directive = {
+                    var directive = {
 
-                    fieldTypeName: 'multichoice',
-                    replaceAll: false,
+                        fieldTypeName: 'multichoice',
+                        replaceAll: false,
 
-                    init: function() {
+                        init: function() {
 
-                        $scope.chooseText = STSHtmlEncode(Strings.STS.L_Choose_Text);
-                        $scope.choiceFillInDisplayText = STSHtmlEncode(Strings.STS.L_ChoiceFillInDisplayText);
-                        $scope.fillInChoiceCheckbox = false;
-                        $scope.fillInChoiceValue = null;
-                    },
+                            $scope.chooseText = STSHtmlEncode(Strings.STS.L_Choose_Text);
+                            $scope.choiceFillInDisplayText = STSHtmlEncode(Strings.STS.L_ChoiceFillInDisplayText);
+                            $scope.fillInChoiceCheckbox = false;
+                            $scope.fillInChoiceValue = null;
+                        },
 
-                    renderFn: function() {
+                        renderFn: function() {
 
-                        var value = $scope.modelCtrl.$viewValue;
+                            var value = $scope.modelCtrl.$viewValue;
 
-                        // Adjust the model if no value is provided
-                        if (value === null || value === void 0) {
-                            value = { results: [] };
+                            // Adjust the model if no value is provided
+                            if (value === null || value === void 0) {
+                                value = {
+                                    results: []
+                                };
+                            }
+
+                            $scope.choices = [].concat(value.results);
+                            // Checks if 'FillInChoice' option is enabled
+                            if ($scope.schema.FillInChoice) {
+
+                                // Checks if there is a value that don't match with the predefined schema choices.
+                                // If so, will be the 'FillInChoice' value (user custom value).
+                                angular.forEach($scope.choices, function(choice) {
+
+                                    if ($scope.schema.Choices.results.indexOf(choice) == -1) {
+
+                                        $scope.fillInChoiceCheckbox = true;
+                                        $scope.fillInChoiceValue = choice;
+
+                                    }
+
+                                });
+                            }
+
+                            // Replace standar required validator
+                            $scope.modelCtrl.$validators.required = function(modelValue, viewValue) {
+
+                                if ($scope.currentMode != 'edit') return true;
+                                if (!$scope.schema.Required) return true;
+                                if (viewValue && viewValue.results.length > 0) return true;
+
+                                return false;
+                            };
+                        },
+
+                        formatterFn: function(modelValue) {
+
+                            $scope.formCtrl.fieldValueChanged($scope.schema.InternalName, modelValue, $scope.lastValue);
+                            $scope.lastValue = modelValue;
+
+                            return modelValue;
+                        },
+
+                        parserFn: function(viewValue) {
+
+                            // Calls the 'fieldValueChanged' method in the SPForm controller to broadcast to all child elements.
+                            $scope.formCtrl.fieldValueChanged($scope.schema.InternalName, viewValue, $scope.lastValue);
+                            $scope.lastValue = viewValue;
+
+                            return viewValue;
+                        }
+                    };
+
+
+                    SPFieldDirective.baseLinkFn.apply(directive, arguments);
+
+
+                    // ****************************************************************************
+                    // Updates the model (array of choices) when a checkbox is toggled.
+                    //
+                    $scope.toggleCheckbox = function(choice) {
+
+                        var idx = $scope.choices.indexOf(choice);
+
+                        if (idx != -1) {
+
+                            $scope.choices.splice(idx, 1);
+
+                        } else {
+
+                            $scope.choices.push(choice);
+
                         }
 
-                        $scope.choices = [].concat(value.results);
-                        // Checks if 'FillInChoice' option is enabled
-                        if ($scope.schema.FillInChoice) {
+                        sortChoices();
 
-                            // Checks if there is a value that don't match with the predefined schema choices.
-                            // If so, will be the 'FillInChoice' value (user custom value).
-                            angular.forEach($scope.choices, function(choice) {
+                    };
 
-                                if ($scope.schema.Choices.results.indexOf(choice) == -1) {
 
-                                    $scope.fillInChoiceCheckbox = true;
-                                    $scope.fillInChoiceValue = choice;
 
-                                }
+                    // ****************************************************************************
+                    // Sort the choices according to the definition order.
+                    // NOTE: The choices are already ordered in the schema.
+                    //
+                    function sortChoices() {
 
-                            });
+                        var sortedChoices = [];
+
+                        angular.forEach($scope.schema.Choices.results, function(choice) {
+
+                            if ($scope.choices.indexOf(choice) != -1) {
+                                sortedChoices.push(choice);
+                            }
+
+                        });
+
+
+                        if ($scope.schema.FillInChoice && $scope.fillInChoiceCheckbox && $scope.fillInChoiceValue) {
+
+                            sortedChoices.push($scope.fillInChoiceValue);
+
                         }
 
-                        // Replace standar required validator
-                        $scope.modelCtrl.$validators.required = function(modelValue, viewValue) {
+                        $scope.modelCtrl.$setViewValue({
+                            results: sortedChoices
+                        });
 
-                            if ($scope.currentMode != 'edit') return true;
-                            if (!$scope.schema.Required) return true;
-                            if (viewValue && viewValue.results.length > 0) return true;
-
-                            return false;
-                        };
-                    },
-
-                    formatterFn: function(modelValue) {
-
-						$scope.formCtrl.fieldValueChanged($scope.schema.InternalName, modelValue, $scope.lastValue);
-						$scope.lastValue = modelValue;
-
-                        return modelValue;
-                    },
-
-					parserFn: function(viewValue) {
-
-						// Calls the 'fieldValueChanged' method in the SPForm controller to broadcast to all child elements.
-						$scope.formCtrl.fieldValueChanged($scope.schema.InternalName, viewValue, $scope.lastValue);
-						$scope.lastValue = viewValue;
-
-						return viewValue;
                     }
-                };
 
 
-                SPFieldDirective.baseLinkFn.apply(directive, arguments);
+                    $scope.$watch('fillInChoiceValue', function(newValue, oldValue) {
 
+                        if (newValue == oldValue) return;
 
-                // ****************************************************************************
-                // Updates the model (array of choices) when a checkbox is toggled.
-                //
-                $scope.toggleCheckbox = function(choice) {
+                        var oldValueIndex = $scope.choices.indexOf(oldValue);
 
-                    var idx = $scope.choices.indexOf(choice);
+                        if (oldValueIndex != -1) {
 
-                    if (idx != -1) {
+                            $scope.choices.splice(oldValueIndex, 1);
 
-                        $scope.choices.splice(idx, 1);
-
-                    } else {
-
-                        $scope.choices.push(choice);
-
-                    }
-
-                    sortChoices();
-
-                };
-
-
-
-                // ****************************************************************************
-                // Sort the choices according to the definition order.
-                // NOTE: The choices are already ordered in the schema.
-                //
-                function sortChoices() {
-
-                    var sortedChoices = [];
-
-                    angular.forEach($scope.schema.Choices.results, function(choice) {
-
-                        if($scope.choices.indexOf(choice) != -1) {
-                            sortedChoices.push(choice);
                         }
+
+                        sortChoices();
 
                     });
 
 
-                    if ($scope.schema.FillInChoice && $scope.fillInChoiceCheckbox && $scope.fillInChoiceValue) {
+                    $scope.fillInChoiceCheckboxChanged = function() {
 
-                        sortedChoices.push($scope.fillInChoiceValue);
+                        if ($scope.fillInChoiceCheckbox) {
 
-                    }
+                            var fillInChoiceElement = document.getElementById($scope.schema.InternalName + '_' + $scope.schema.Id + 'FillInText');
 
-                    $scope.modelCtrl.$setViewValue({ results: sortedChoices });
+                            if (fillInChoiceElement) {
 
-                }
+                                fillInChoiceElement.focus();
 
-
-                $scope.$watch('fillInChoiceValue', function(newValue, oldValue) {
-
-                    if (newValue == oldValue) return;
-
-                    var oldValueIndex = $scope.choices.indexOf(oldValue);
-
-                    if (oldValueIndex != -1) {
-
-                        $scope.choices.splice(oldValueIndex, 1);
-
-                    }
-
-                    sortChoices();
-
-                });
-
-
-                $scope.fillInChoiceCheckboxChanged = function() {
-
-                    if ($scope.fillInChoiceCheckbox) {
-
-                        var fillInChoiceElement = document.getElementById($scope.schema.InternalName + '_' + $scope.schema.Id + 'FillInText');
-
-                        if (fillInChoiceElement) {
-
-                            fillInChoiceElement.focus();
+                            }
 
                         }
 
-                    }
 
+                        sortChoices();
 
-                    sortChoices();
+                    };
 
-                };
-
-            } // link
+                } // link
 
         }; // Directive definition object
 
@@ -203,4 +213,4 @@ angular.module('ngSharePoint').directive('spfieldMultichoice',
 
     } // Directive factory
 
-]);
+})();

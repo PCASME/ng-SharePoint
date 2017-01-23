@@ -8,21 +8,23 @@
  *
  */
 
+;(function() {
 
-angular.module('ngSharePoint').service('SPHttp', 
+    angular
+        .module('ngSharePoint')
+        .service('SPHttp', SPHttp_Service);
 
-    ['$q', '$http', 
+    SPHttp_Service.$inject = ['$q', '$http'];
 
-    function ($q, $http) {
+    function SPHttp_Service($q, $http) {
 
         'use strict';
 
 
-
         /**
-        * Makes a GET call to a specified REST api
-        * *Internal use*
-        */
+         * Makes a GET call to a specified REST api
+         * *Internal use*
+         */
         this.get = function(url, params) {
 
             var self = this;
@@ -31,8 +33,8 @@ angular.module('ngSharePoint').service('SPHttp',
             $http({
 
                 url: url,
-                method: 'GET', 
-                headers: { 
+                method: 'GET',
+                headers: {
                     "Accept": "application/json; odata=verbose"
                 }
 
@@ -40,7 +42,7 @@ angular.module('ngSharePoint').service('SPHttp',
 
                 var d = utils.parseSPResponse(data);
                 def.resolve(d);
-                    
+
             }, function(data, errorCode, errorMessage) {
 
                 var err = utils.parseError({
@@ -58,14 +60,15 @@ angular.module('ngSharePoint').service('SPHttp',
 
 
         /**
-        * Makes a POST call to a specified REST api
-        * *Internal use*
-        */
+         * Makes a POST call to a specified REST api
+         * *Internal use*
+         */
         this.post = function(url, params) {
 
 
 
-        }; // setJSLink
+        }; // post
 
     }
-]);
+
+})();

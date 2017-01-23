@@ -14,7 +14,7 @@
 //  SPAction
 ///////////////////////////////////////
 
-(function() {
+;(function() {
 
     'use strict';
 

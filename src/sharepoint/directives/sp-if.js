@@ -14,10 +14,16 @@
 //  SPIf
 ///////////////////////////////////////
 
-angular.module('ngSharePoint').directive('spIf',
+;(function() {
 
-    ['$compile', 'SPExpressionResolver',
+    angular
+        .module('ngSharePoint')
+        .directive('spIf', spIf_DirectiveFactory);
 
+    spIf_DirectiveFactory.$inject = ['$compile', 'SPExpressionResolver'];
+
+
+    /* @ngInject */
     function spIf_DirectiveFactory($compile, SPExpressionResolver) {
 
         var spIfDirectiveDefinitionObject = {
@@ -27,28 +33,28 @@ angular.module('ngSharePoint').directive('spIf',
             priority: 600,
 
 
-            link: function ($scope, $element, $attrs) {
+            link: function($scope, $element, $attrs) {
 
-                // NOTA: Habría que hacer un $watch o $observe del atributo 'spif' igual que hace
-                //       la directiva 'ngIf' de angular para que se evalúe dinámicamente.
+                    // NOTA: Habría que hacer un $watch o $observe del atributo 'spif' igual que hace
+                    //       la directiva 'ngIf' de angular para que se evalúe dinámicamente.
 
-                SPExpressionResolver.resolve($attrs.spIf, $scope).then(function(result) {
+                    SPExpressionResolver.resolve($attrs.spIf, $scope).then(function(result) {
 
-                    if (!$scope.$eval(result)) {
+                        if (!$scope.$eval(result)) {
 
-                        $element.remove();
-                        $element = null;
+                            $element.remove();
+                            $element = null;
 
-                    } else {
+                        } else {
 
-                        $element.removeAttr('sp-if');
-                        $element = $compile($element, 600)($scope);
+                            $element.removeAttr('sp-if');
+                            $element = $compile($element, 600)($scope);
 
-                    }
+                        }
 
-                });
+                    });
 
-            } // link
+                } // link
 
         }; // Directive definition object
 
@@ -57,4 +63,4 @@ angular.module('ngSharePoint').directive('spIf',
 
     } // Directive factory
 
-]);
+})();

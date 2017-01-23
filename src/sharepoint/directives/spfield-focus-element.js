@@ -14,11 +14,17 @@
 //  SPFieldFocusElement
 ///////////////////////////////////////
 
-angular.module('ngSharePoint').directive('spfieldFocusElement', 
+;(function() {
 
-    [
+    angular
+        .module('ngSharePoint')
+        .directive('spfieldFocusElement', spfieldFocusElement_DirectiveFactory);
 
-    function spfieldFocusElement_DirectiveFactory() {
+    spfieldFocusElement_DirectiveFactory.$inject = [];
+
+ 
+    /* @ngInject */
+   function spfieldFocusElement_DirectiveFactory() {
 
         var spfieldFocusElement_DirectiveDefinitionObject = {
 
@@ -26,38 +32,41 @@ angular.module('ngSharePoint').directive('spfieldFocusElement',
 
             link: function($scope, $element, $attrs) {
 
-                if ($scope.formCtrl) {
+                    if ($scope.formCtrl) {
 
-                    $scope.formCtrl.focusElements = $scope.formCtrl.focusElements || [];
+                        $scope.formCtrl.focusElements = $scope.formCtrl.focusElements || [];
 
-                    removeFocusElement($scope.name);
+                        removeFocusElement($scope.name);
 
-                    $scope.formCtrl.focusElements.push({ name: $scope.name, element: $element });
+                        $scope.formCtrl.focusElements.push({
+                            name: $scope.name,
+                            element: $element
+                        });
 
-                }
+                    }
 
 
-                function removeFocusElement(name) {
+                    function removeFocusElement(name) {
 
-                    for (var i = 0; i < $scope.formCtrl.focusElements.length; i++) {
-                        
-                        if ($scope.formCtrl.focusElements[i].name === name) {
+                        for (var i = 0; i < $scope.formCtrl.focusElements.length; i++) {
 
-                            $scope.formCtrl.focusElements.splice(i, 1);
+                            if ($scope.formCtrl.focusElements[i].name === name) {
+
+                                $scope.formCtrl.focusElements.splice(i, 1);
+
+                            }
 
                         }
 
                     }
 
-                }
-
-            } // link
+                } // link
 
         }; // Directive definition object
 
 
         return spfieldFocusElement_DirectiveDefinitionObject;
-        
+
     } // Directive factory
 
-]);
+})();

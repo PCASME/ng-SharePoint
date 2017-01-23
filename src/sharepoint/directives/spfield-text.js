@@ -14,10 +14,16 @@
 //	SPFieldText
 ///////////////////////////////////////
 
-angular.module('ngSharePoint').directive('spfieldText',
+;(function() {
 
-	['SPFieldDirective',
+	angular
+		.module('ngSharePoint')
+		.directive('spfieldText', spfieldText_DirectiveFactory);
 
+	spfieldText_DirectiveFactory.$inject = ['SPFieldDirective'];
+
+
+    /* @ngInject */
 	function spfieldText_DirectiveFactory(SPFieldDirective) {
 
 		var spfieldText_DirectiveDefinitionObject = {
@@ -34,33 +40,33 @@ angular.module('ngSharePoint').directive('spfieldText',
 			link: function($scope, $element, $attrs, controllers) {
 
 
-				var directive = {
+					var directive = {
 
-					fieldTypeName: 'text',
-					replaceAll: false,
+						fieldTypeName: 'text',
+						replaceAll: false,
 
-                    formatterFn: function(modelValue) {
+						formatterFn: function(modelValue) {
 
-						$scope.formCtrl.fieldValueChanged($scope.schema.InternalName, modelValue, $scope.lastValue);
-						$scope.lastValue = modelValue;
+							$scope.formCtrl.fieldValueChanged($scope.schema.InternalName, modelValue, $scope.lastValue);
+							$scope.lastValue = modelValue;
 
-                        return modelValue;
-                    },
+							return modelValue;
+						},
 
-					parserFn: function(viewValue) {
+						parserFn: function(viewValue) {
 
-						// Calls the 'fieldValueChanged' method in the SPForm controller to broadcast to all child elements.
-						$scope.formCtrl.fieldValueChanged($scope.schema.InternalName, viewValue, $scope.lastValue);
-						$scope.lastValue = viewValue;
+							// Calls the 'fieldValueChanged' method in the SPForm controller to broadcast to all child elements.
+							$scope.formCtrl.fieldValueChanged($scope.schema.InternalName, viewValue, $scope.lastValue);
+							$scope.lastValue = viewValue;
 
-						return viewValue;
-                    }
-				};
+							return viewValue;
+						}
+					};
 
 
-				SPFieldDirective.baseLinkFn.apply(directive, arguments);
+					SPFieldDirective.baseLinkFn.apply(directive, arguments);
 
-			} // link
+				} // link
 
 		}; // Directive definition object
 
@@ -69,4 +75,4 @@ angular.module('ngSharePoint').directive('spfieldText',
 
 	} // Directive factory
 
-]);
+})();

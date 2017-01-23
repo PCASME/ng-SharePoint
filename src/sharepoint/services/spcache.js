@@ -14,9 +14,13 @@
 //	SPCache
 ///////////////////////////////////////
 
-angular.module('ngSharePoint').factory('SPCache', 
+;(function() {
 
-	['$q', '$cacheFactory', 
+	angular
+		.module('ngSharePoint')
+		.factory('SPCache', SPCache_Factory);
+
+	SPCache_Factory.$inject = ['$q', '$cacheFactory'];
 
 	function SPCache_Factory($q, $cacheFactory) {
 
@@ -27,13 +31,13 @@ angular.module('ngSharePoint').factory('SPCache',
 
 			getCache: function(cacheName) {
 
-	        	var cache = $cacheFactory.get(cacheName);
+				var cache = $cacheFactory.get(cacheName);
 
-	        	if (cache === void 0) {
-	        		cache = $cacheFactory(cacheName); //-> Crea la cache
-	        	}
+				if (cache === void 0) {
+					cache = $cacheFactory(cacheName); //-> Crea la cache
+				}
 
-	        	return cache;
+				return cache;
 			},
 
 
@@ -52,11 +56,11 @@ angular.module('ngSharePoint').factory('SPCache',
 
 			removeCacheValue: function(cacheName, key) {
 
-        		this.getCache(cacheName).remove(key);
-	        }
+				this.getCache(cacheName).remove(key);
+			}
 
 		};
 
 	}
 
-]);
+})();

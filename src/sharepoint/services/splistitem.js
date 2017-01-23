@@ -16,10 +16,13 @@
  */
 
 
+;(function() {
 
-angular.module('ngSharePoint').factory('SPListItem', 
+    angular
+        .module('ngSharePoint')
+        .factory('SPListItem', SPListItem_Factory);
 
-    ['$q', 'SPUtils', 
+    SPListItem_Factory.$inject = ['$q', 'SPUtils'];
 
     function SPListItem_Factory($q, SPUtils) {
 
@@ -82,7 +85,7 @@ angular.module('ngSharePoint').factory('SPListItem',
                     if (data.list !== void 0) {
                         delete data.list;
                     }
-                    
+
                     utils.cleanDeferredProperties(data);
                     angular.extend(this, data);
 
@@ -153,7 +156,7 @@ angular.module('ngSharePoint').factory('SPListItem',
                 }
 
             }
-            
+
             return apiUrl;
 
         };
@@ -197,7 +200,7 @@ angular.module('ngSharePoint').factory('SPListItem',
          *    });
          *
          * </pre>
-        */        
+         */
         SPListItemObj.prototype.getProperties = function(expandProperties) {
 
             var self = this;
@@ -213,10 +216,10 @@ angular.module('ngSharePoint').factory('SPListItem',
             executor.executeAsync({
 
                 url: self.getAPIUrl() + utils.parseQuery(query),
-                method: 'GET', 
-                headers: { 
+                method: 'GET',
+                headers: {
                     "Accept": "application/json; odata=verbose"
-                }, 
+                },
 
                 success: function(data) {
 
@@ -237,7 +240,7 @@ angular.module('ngSharePoint').factory('SPListItem',
                                 });
                                 break;
 
-                            case 1: 
+                            case 1:
                                 // get the Folder
                                 self.getFolder().then(function() {
                                     def.resolve(d);
@@ -254,7 +257,7 @@ angular.module('ngSharePoint').factory('SPListItem',
 
                         def.resolve(d);
                     }
-                }, 
+                },
 
                 error: function(data, errorCode, errorMessage) {
 
@@ -300,10 +303,10 @@ angular.module('ngSharePoint').factory('SPListItem',
             executor.executeAsync({
 
                 url: self.getAPIUrl() + '/FieldValuesAsHtml',
-                method: 'GET', 
-                headers: { 
+                method: 'GET',
+                headers: {
                     "Accept": "application/json; odata=verbose"
-                }, 
+                },
 
                 success: function(data) {
 
@@ -312,8 +315,8 @@ angular.module('ngSharePoint').factory('SPListItem',
                     utils.cleanDeferredProperties(d);
                     self.FieldValuesAsHtml = d;
                     def.resolve(d);
-                    
-                }, 
+
+                },
 
                 error: function(data, errorCode, errorMessage) {
 
@@ -329,8 +332,7 @@ angular.module('ngSharePoint').factory('SPListItem',
 
             return def.promise;
 
-        };  // getFieldValuesAsHtml
-
+        }; // getFieldValuesAsHtml
 
 
 
@@ -355,10 +357,10 @@ angular.module('ngSharePoint').factory('SPListItem',
             executor.executeAsync({
 
                 url: self.getAPIUrl() + '/File?$expand=ParentFolder',
-                method: 'GET', 
-                headers: { 
+                method: 'GET',
+                headers: {
                     "Accept": "application/json; odata=verbose"
-                }, 
+                },
 
                 success: function(data) {
 
@@ -367,7 +369,7 @@ angular.module('ngSharePoint').factory('SPListItem',
                     angular.extend(self, d);
 
                     def.resolve(d);
-                }, 
+                },
 
                 error: function(data, errorCode, errorMessage) {
 
@@ -408,10 +410,10 @@ angular.module('ngSharePoint').factory('SPListItem',
             executor.executeAsync({
 
                 url: self.getAPIUrl() + '/Folder?$expand=ParentFolder',
-                method: 'GET', 
-                headers: { 
+                method: 'GET',
+                headers: {
                     "Accept": "application/json; odata=verbose"
-                }, 
+                },
 
                 success: function(data) {
 
@@ -420,7 +422,7 @@ angular.module('ngSharePoint').factory('SPListItem',
                     angular.extend(self, d);
 
                     def.resolve(d);
-                }, 
+                },
 
                 error: function(data, errorCode, errorMessage) {
 
@@ -463,7 +465,10 @@ angular.module('ngSharePoint').factory('SPListItem',
 
                 // Initialize the attachments arrays (See processAttachments method).
                 self.AttachmentFiles = [];
-                self.attachments = { add: [], remove: [] };
+                self.attachments = {
+                    add: [],
+                    remove: []
+                };
                 def.resolve(self.AttachmentFiles);
 
             } else {
@@ -471,10 +476,10 @@ angular.module('ngSharePoint').factory('SPListItem',
                 executor.executeAsync({
 
                     url: self.getAPIUrl() + '/AttachmentFiles',
-                    method: 'GET', 
-                    headers: { 
+                    method: 'GET',
+                    headers: {
                         "Accept": "application/json; odata=verbose"
-                    }, 
+                    },
 
                     success: function(data) {
 
@@ -488,7 +493,7 @@ angular.module('ngSharePoint').factory('SPListItem',
                         };
 
                         def.resolve(d);
-                    }, 
+                    },
 
                     error: function(data, errorCode, errorMessage) {
 
@@ -563,10 +568,10 @@ angular.module('ngSharePoint').factory('SPListItem',
                     success: function(data) {
 
                         var d = utils.parseSPResponse(data);
-                        
+
                         def.resolve(d);
 
-                    }, 
+                    },
 
                     error: function(data, errorCode, errorMessage) {
 
@@ -643,7 +648,7 @@ angular.module('ngSharePoint').factory('SPListItem',
 
                     def.resolve(d);
 
-                }, 
+                },
 
                 error: function(data, errorCode, errorMessage) {
 
@@ -661,7 +666,6 @@ angular.module('ngSharePoint').factory('SPListItem',
             return def.promise;
 
         }; // removeAttachment
-
 
 
 
@@ -705,7 +709,7 @@ angular.module('ngSharePoint').factory('SPListItem',
 
                 }
 
-                switch(attachmentOperation.operation.toLowerCase()) {
+                switch (attachmentOperation.operation.toLowerCase()) {
 
                     case 'add':
                         self.addAttachment(attachmentOperation.file).finally(function() {
@@ -719,7 +723,7 @@ angular.module('ngSharePoint').factory('SPListItem',
                                 var errorStatus = err.data.statusCode + ' (' + err.data.statusText + ')';
                                 alert(attachmentOperation.file.name + '\n\n' + err.code + '\n' + errorStatus + '\n\n' + err.message);
 
-                            } catch(e) {
+                            } catch (e) {
 
                                 console.log(err);
                                 alert('Error attaching the file ' + attachmentOperation.file.name);
@@ -794,7 +798,6 @@ angular.module('ngSharePoint').factory('SPListItem',
 
 
 
-
         /**
          * @ngdoc function
          * @name ngSharePoint.SPListItem#save
@@ -866,7 +869,7 @@ angular.module('ngSharePoint').factory('SPListItem',
 
                 // Remove all Computed and ReadOnlyFields
                 angular.forEach(self.list.Fields, function(field) {
-                    
+
                     if (field.TypeAsString === 'Computed' || field.ReadOnlyField) {
                         // delete saveObj[field.InternalName];
                         if (field.EntityPropertyName !== 'ContentTypeId') delete saveObj[field.EntityPropertyName];
@@ -944,7 +947,7 @@ angular.module('ngSharePoint').factory('SPListItem',
                     angular.extend(headers, {
                         "X-HTTP-Method": "MERGE",
                         "IF-MATCH": "*" // Overwrite any changes in the item. 
-                                        // Use 'item.__metadata.etag' to provide a way to verify that the object being changed has not been changed since it was last retrieved.
+                            // Use 'item.__metadata.etag' to provide a way to verify that the object being changed has not been changed since it was last retrieved.
                     });
                 }
 
@@ -984,7 +987,7 @@ angular.module('ngSharePoint').factory('SPListItem',
                         }, function() {
                             def.resolve(d);
                         });
-                    }, 
+                    },
 
                     error: function(data, errorCode, errorMessage) {
 
@@ -1004,7 +1007,6 @@ angular.module('ngSharePoint').factory('SPListItem',
             return def.promise;
 
         }; // save
-
 
 
 
@@ -1063,7 +1065,7 @@ angular.module('ngSharePoint').factory('SPListItem',
                     var d = utils.parseSPResponse(data);
 
                     def.resolve(d);
-                }, 
+                },
 
                 error: function(data, errorCode, errorMessage) {
 
@@ -1081,7 +1083,6 @@ angular.module('ngSharePoint').factory('SPListItem',
             return def.promise;
 
         }; // remove
-
 
 
 
@@ -1184,7 +1185,7 @@ angular.module('ngSharePoint').factory('SPListItem',
                             self.getProperties().then(function() {
                                 def.resolve();
                             });
-                        }, 
+                        },
 
                         error: function(data, errorCode, errorMessage) {
 
@@ -1212,4 +1213,5 @@ angular.module('ngSharePoint').factory('SPListItem',
         return SPListItemObj;
 
     }
-]);
+
+})();

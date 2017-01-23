@@ -7,52 +7,55 @@
  * 
  */
 
-angular.module('ngSharePoint').factory('SPExpressionResolverparam', 
+;(function () {
 
-    [
+    angular.module('ngSharePoint').factory('SPExpressionResolverparam', 
 
-    function SPExpressionResolverParam_Factory() {
+        [
 
-        'use strict';
+        function SPExpressionResolverParam_Factory() {
 
-        var PARTS_REGEXP = /[\[./]([\w )]+)/g;
+            'use strict';
 
-        function getExpressionParts(text) {
+            var PARTS_REGEXP = /[\[./]([\w )]+)/g;
 
-            var matches = [];
-            var match;
+            function getExpressionParts(text) {
 
-            while ((match = PARTS_REGEXP.exec(text))) {
+                var matches = [];
+                var match;
 
-                match.shift();
-                matches.push(match.join(''));
-            }
+                while ((match = PARTS_REGEXP.exec(text))) {
 
-            return matches;
-        }
-
-        return {
-
-            resolve: function(expression, scope) {
-
-                var paramName = getExpressionParts(expression)[0];
-                var value = utils.getQueryStringParamByName(paramName);
-
-                if (scope.expressions !== void 0) {
-
-                    var extendedExpression = {
-                        param: {
-                        }
-                    };
-                    extendedExpression.param[paramName] = value;
-
-                    scope.expressions = utils.deepExtend(extendedExpression, scope.expressions);
+                    match.shift();
+                    matches.push(match.join(''));
                 }
-                return 'expressions.param.' + paramName;
+
+                return matches;
             }
 
-        };
+            return {
 
-    }
-]);
+                resolve: function(expression, scope) {
 
+                    var paramName = getExpressionParts(expression)[0];
+                    var value = utils.getQueryStringParamByName(paramName);
+
+                    if (scope.expressions !== void 0) {
+
+                        var extendedExpression = {
+                            param: {
+                            }
+                        };
+                        extendedExpression.param[paramName] = value;
+
+                        scope.expressions = utils.deepExtend(extendedExpression, scope.expressions);
+                    }
+                    return 'expressions.param.' + paramName;
+                }
+
+            };
+
+        }
+    ]);
+
+})();

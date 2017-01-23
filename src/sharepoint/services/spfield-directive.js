@@ -14,9 +14,13 @@
 //  SPFieldDirective
 ///////////////////////////////////////
 
-angular.module('ngSharePoint').service('SPFieldDirective',
+;(function() {
 
-    ['$compile', '$http', '$templateCache', '$q', 'SPUtils',
+    angular
+        .module('ngSharePoint')
+        .service('SPFieldDirective', SPFieldDirective_Factory);
+
+    SPFieldDirective_Factory.$inject = ['$compile', '$http', '$templateCache', '$q', 'SPUtils'];
 
     function SPFieldDirective_Factory($compile, $http, $templateCache, $q, SPUtils) {
 
@@ -46,7 +50,6 @@ angular.module('ngSharePoint').service('SPFieldDirective',
             // Update the model property '$viewValue' when the model value changes.
             this.modelCtrl.$setViewValue(newValue);
         }
-
 
 
 
@@ -134,7 +137,7 @@ angular.module('ngSharePoint').service('SPFieldDirective',
          *                                       update the view (render). By default, this function
          *                                       set's the scope.value variable with the new value
          *                                       (modelCtrl.$viewValue)
-
+         
          *              onValidateFn (function): If defined, applies it after the default behavior 
          *                                       in the '$scope.$on('validate', ...)' function.
          *
@@ -203,7 +206,9 @@ angular.module('ngSharePoint').service('SPFieldDirective',
                 if ($scope.currentMode === 'edit' && directive.editTemplateUrl) templateUrl = directive.editTemplateUrl;
 
 
-                $http.get(templateUrl, { cache: $templateCache }).success(function(html) {
+                $http.get(templateUrl, {
+                    cache: $templateCache
+                }).success(function(html) {
 
                     // Checks if the field has an 'extended template'.
                     // The 'extended template' is defined in the field 'extended schema'.
@@ -255,7 +260,9 @@ angular.module('ngSharePoint').service('SPFieldDirective',
 
                         if (angular.isDefined(templateEx.url)) {
 
-                            $http.get(templateEx.url, { cache: $templateCache }).success(function(htmlEx) {
+                            $http.get(templateEx.url, {
+                                cache: $templateCache
+                            }).success(function(htmlEx) {
 
                                 finalHtml = replace ? htmlEx : html + htmlEx;
                                 deferred.resolve(finalHtml);
@@ -286,7 +293,6 @@ angular.module('ngSharePoint').service('SPFieldDirective',
                 return deferred.promise;
 
             };
-
 
 
 
@@ -435,4 +441,4 @@ angular.module('ngSharePoint').service('SPFieldDirective',
 
     } // SPFieldDirective factory
 
-]);
+})();

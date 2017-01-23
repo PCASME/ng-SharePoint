@@ -14,9 +14,13 @@
 //  SPObjectProvider
 ///////////////////////////////////////
 
-angular.module('ngSharePoint').factory('SPObjectProvider', 
+;(function() {
 
-    ['$injector', 
+    angular
+        .module('ngSharePoint')
+        .factory('SPObjectProvider', SPObjectProvider_Factory);
+
+    SPObjectProvider_Factory.$inject = ['$injector'];
 
     function SPObjectProvider_Factory($injector) {
 
@@ -24,23 +28,23 @@ angular.module('ngSharePoint').factory('SPObjectProvider',
 
         return {
 
-        	getSPWeb: function(url) {
+            getSPWeb: function(url) {
 
-        		var service = $injector.get('SPWeb');
-        		return new service(url);
-        	},
+                var service = $injector.get('SPWeb');
+                return new service(url);
+            },
 
-        	getSPList: function(web, listName, listProperties) {
+            getSPList: function(web, listName, listProperties) {
 
-        		var service = $injector.get('SPList');
-        		return new service(web, listName, listProperties);
-        	},
+                var service = $injector.get('SPList');
+                return new service(web, listName, listProperties);
+            },
 
-        	getSPListItem: function(list, data) {
+            getSPListItem: function(list, data) {
 
-        		var service = $injector.get('SPListItem');
-        		return new service(list, data);
-        	},
+                var service = $injector.get('SPListItem');
+                return new service(list, data);
+            },
 
             getSPFolder: function(web, path, folderProperties) {
 
@@ -53,20 +57,21 @@ angular.module('ngSharePoint').factory('SPObjectProvider',
                 return new service(web, path, fileProperties);
             },
 
-        	getSPGroup: function(web, groupName, groupProperties) {
+            getSPGroup: function(web, groupName, groupProperties) {
 
-        		var service = $injector.get('SPGroup');
-        		return new service(web, groupName, groupProperties);
-        	},
+                var service = $injector.get('SPGroup');
+                return new service(web, groupName, groupProperties);
+            },
 
-        	getSPUser: function(web, userId, userData) {
+            getSPUser: function(web, userId, userData) {
 
-        		var service = $injector.get('SPUser');
-        		return new service(web, userId, userData);
-        	}
+                var service = $injector.get('SPUser');
+                return new service(web, userId, userData);
+            }
 
 
         };
 
     }
-]);
+
+})();

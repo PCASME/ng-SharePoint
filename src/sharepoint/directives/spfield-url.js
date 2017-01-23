@@ -14,112 +14,121 @@
 //	SPFieldUrl
 ///////////////////////////////////////
 
-angular.module('ngSharePoint').directive('spfieldUrl',
+;(function() {
 
-	['SPFieldDirective',
+    angular
+        .module('ngSharePoint')
+        .directive('spfieldUrl', spfieldUrl_DirectiveFactory);
 
-	function spfieldUrl_DirectiveFactory(SPFieldDirective) {
-
-		var spfieldUrl_DirectiveDefinitionObject = {
-
-			restrict: 'EA',
-			require: ['^spform', 'ngModel'],
-			replace: true,
-			scope: {
-				mode: '@'
-			},
-			templateUrl: 'templates/form-templates/spfield-control.html',
+    spfieldUrl_DirectiveFactory.$inject = ['SPFieldDirective'];
 
 
-			link: function($scope, $element, $attrs, controllers) {
+    /* @ngInject */
+    function spfieldUrl_DirectiveFactory(SPFieldDirective) {
+
+        var spfieldUrl_DirectiveDefinitionObject = {
+
+            restrict: 'EA',
+            require: ['^spform', 'ngModel'],
+            replace: true,
+            scope: {
+                mode: '@'
+            },
+            templateUrl: 'templates/form-templates/spfield-control.html',
 
 
-				var directive = {
+            link: function($scope, $element, $attrs, controllers) {
 
-					fieldTypeName: 'url',
-					replaceAll: false,
 
-					init: function() {
+                    var directive = {
 
-						$scope.UrlFieldTypeText = Strings.STS.L_UrlFieldTypeText;
-						$scope.UrlFieldTypeDescription = Strings.STS.L_UrlFieldTypeDescription;
-						$scope.UrlFieldClickText = Strings.STS.L_UrlFieldClickText;
-						$scope.Description_Text = Strings.STS.L_Description_Text;
-					},
+                        fieldTypeName: 'url',
+                        replaceAll: false,
 
-					renderFn: function() {
+                        init: function() {
 
-						var value = $scope.modelCtrl.$viewValue;
+                            $scope.UrlFieldTypeText = Strings.STS.L_UrlFieldTypeText;
+                            $scope.UrlFieldTypeDescription = Strings.STS.L_UrlFieldTypeDescription;
+                            $scope.UrlFieldClickText = Strings.STS.L_UrlFieldClickText;
+                            $scope.Description_Text = Strings.STS.L_Description_Text;
+                        },
 
-                        // Adjust the model if no value is provided
-                        if (value === null || value === void 0) {
-                            value = { Url: '', Description: '' };
-                        }
+                        renderFn: function() {
 
-                        $scope.Url = value.Url;
-                        $scope.Description = value.Description;
+                            var value = $scope.modelCtrl.$viewValue;
 
-                        // Replace standar required validator
-                        $scope.modelCtrl.$validators.required = function(modelValue, viewValue) {
-
-                            if ($scope.currentMode != 'edit') return true;
-                            if (!$scope.schema.Required) return true;
-                            if (viewValue) {
-
-                            	if (viewValue.Url !== void 0 && viewValue.Url !== '') return true;
+                            // Adjust the model if no value is provided
+                            if (value === null || value === void 0) {
+                                value = {
+                                    Url: '',
+                                    Description: ''
+                                };
                             }
 
-                            return false;
-                        };
-					},
+                            $scope.Url = value.Url;
+                            $scope.Description = value.Description;
 
-                    formatterFn: function(modelValue) {
+                            // Replace standar required validator
+                            $scope.modelCtrl.$validators.required = function(modelValue, viewValue) {
 
-						$scope.formCtrl.fieldValueChanged($scope.schema.InternalName, modelValue, $scope.lastValue);
-						$scope.lastValue = modelValue;
+                                if ($scope.currentMode != 'edit') return true;
+                                if (!$scope.schema.Required) return true;
+                                if (viewValue) {
 
-                        return modelValue;
-                    },
+                                    if (viewValue.Url !== void 0 && viewValue.Url !== '') return true;
+                                }
 
-					parserFn: function(viewValue) {
+                                return false;
+                            };
+                        },
 
-						// Calls the 'fieldValueChanged' method in the SPForm controller to broadcast to all child elements.
-						$scope.formCtrl.fieldValueChanged($scope.schema.InternalName, viewValue, $scope.lastValue);
-						$scope.lastValue = viewValue;
+                        formatterFn: function(modelValue) {
 
-						return viewValue;
-                    }
-				};
+                            $scope.formCtrl.fieldValueChanged($scope.schema.InternalName, modelValue, $scope.lastValue);
+                            $scope.lastValue = modelValue;
 
-				SPFieldDirective.baseLinkFn.apply(directive, arguments);
+                            return modelValue;
+                        },
 
-				$scope.$watch('[Url,Description]', function(newValue, oldValue) {
+                        parserFn: function(viewValue) {
 
-					if (newValue === oldValue) return;
+                            // Calls the 'fieldValueChanged' method in the SPForm controller to broadcast to all child elements.
+                            $scope.formCtrl.fieldValueChanged($scope.schema.InternalName, viewValue, $scope.lastValue);
+                            $scope.lastValue = viewValue;
 
-					$scope.modelCtrl.$setViewValue({
-						Url: $scope.Url,
-						Description: $scope.Description
-					});
-				});
+                            return viewValue;
+                        }
+                    };
 
-	            $scope.modelCtrl.$validators.url = function(modelValue, viewValue) {
+                    SPFieldDirective.baseLinkFn.apply(directive, arguments);
 
-	            	if (viewValue === void 0) return true;
-	            	if (viewValue === null) return true;
-	            	if (viewValue.Url === void 0 || viewValue.Url === '') return true;
+                    $scope.$watch('[Url,Description]', function(newValue, oldValue) {
 
-					var validUrlRegExp = new RegExp('^http://');
-					return validUrlRegExp.test(viewValue.Url);
-	            };
+                        if (newValue === oldValue) return;
 
-			} // link
+                        $scope.modelCtrl.$setViewValue({
+                            Url: $scope.Url,
+                            Description: $scope.Description
+                        });
+                    });
 
-		}; // Directive definition object
+                    $scope.modelCtrl.$validators.url = function(modelValue, viewValue) {
+
+                        if (viewValue === void 0) return true;
+                        if (viewValue === null) return true;
+                        if (viewValue.Url === void 0 || viewValue.Url === '') return true;
+
+                        var validUrlRegExp = new RegExp('^http://');
+                        return validUrlRegExp.test(viewValue.Url);
+                    };
+
+                } // link
+
+        }; // Directive definition object
 
 
-		return spfieldUrl_DirectiveDefinitionObject;
+        return spfieldUrl_DirectiveDefinitionObject;
 
-	} // Directive factory
+    } // Directive factory
 
-]);
+})();

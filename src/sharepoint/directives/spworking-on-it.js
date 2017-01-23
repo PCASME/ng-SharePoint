@@ -14,9 +14,13 @@
 //	SPWorkingOnIt
 ///////////////////////////////////////
 
-angular.module('ngSharePoint').directive('spworkingonit', 
+;(function() {
 
-	[
+	angular
+		.module('ngSharePoint')
+		.directive('spworkingonit', spworkingonit_DirectiveFactory);
+
+	spworkingonit_DirectiveFactory.$inject = [];
 
 	function spworkingonit_DirectiveFactory() {
 
@@ -29,4 +33,4 @@ angular.module('ngSharePoint').directive('spworkingonit',
 
 	}
 
-]);
+})();

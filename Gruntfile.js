@@ -31,7 +31,7 @@ module.exports = function(grunt) {
             ngSharePoint: {
                 src: [
                     'src/utils/**/*.js',
-                    'src/camlhelper/**/*.js',
+                    //'src/camlhelper/**/*.js',
                     'src/sharepoint/ng-sharepoint.js',
                     'src/sharepoint/services/**/*.js',
                     'src/sharepoint/directives/**/*.js',

@@ -7,87 +7,90 @@
  * 
  */
 
-angular.module('ngSharePoint').factory('SPExpressionResolvercurrentUser', 
+;(function () {
 
-    ['SharePoint', 
+    angular.module('ngSharePoint').factory('SPExpressionResolvercurrentUser', 
 
-    function SPExpressionResolvercurrentUser_Factory(SharePoint) {
+        ['SharePoint', 
 
-        'use strict';
+        function SPExpressionResolvercurrentUser_Factory(SharePoint) {
 
-        var PARTS_REGEXP = /[\[./]([\w )]+)/g;
+            'use strict';
 
-        function getExpressionParts(text) {
+            var PARTS_REGEXP = /[\[./]([\w )]+)/g;
 
-            var matches = [];
-            var match;
+            function getExpressionParts(text) {
 
-            while ((match = PARTS_REGEXP.exec(text))) {
+                var matches = [];
+                var match;
 
-                match.shift();
-                matches.push(match.join(''));
-            }
+                while ((match = PARTS_REGEXP.exec(text))) {
 
-            return matches;
-        }
-
-        function createExpressionValue(scope, name, value) {
-
-            if (scope.expressions !== void 0) {
-
-                var extendedExpression = {
-                    currentUser: {
-                    }
-                };
-                if (angular.isArray(name)) {
-
-                    var valueObject = value;
-
-                    for(var r = name.length - 1; r > 0; r--) {
-
-                        var childValue = valueObject;
-                        valueObject = {};
-                        valueObject[name[r]] = childValue;
-
-                    }
-
-                    extendedExpression.currentUser[name[0]] = valueObject;
-
-                } else {
-                    extendedExpression.currentUser[name] = value;
+                    match.shift();
+                    matches.push(match.join(''));
                 }
 
-                scope.expressions = utils.deepExtend(extendedExpression, scope.expressions);
+                return matches;
             }
 
-        }
+            function createExpressionValue(scope, name, value) {
 
-        return {
+                if (scope.expressions !== void 0) {
 
-            resolve: function(expression, scope) {
+                    var extendedExpression = {
+                        currentUser: {
+                        }
+                    };
+                    if (angular.isArray(name)) {
 
-                return SharePoint.getCurrentWeb().then(function(web) {
-                
-                    return web.getList('UserInfoList').then(function(list) {
+                        var valueObject = value;
 
-                        var queryParts = getExpressionParts(expression);
+                        for(var r = name.length - 1; r > 0; r--) {
 
-                        return list.getItemProperty(_spPageContextInfo.userId, queryParts.join('/')).then(function(data) {
+                            var childValue = valueObject;
+                            valueObject = {};
+                            valueObject[name[r]] = childValue;
 
-                            var value = data[queryParts[queryParts.length - 1]];
-                            createExpressionValue(scope, queryParts, value);
-                            return 'expressions.currentUser.' + queryParts.join('.');
+                        }
 
-                        }, function() {
+                        extendedExpression.currentUser[name[0]] = valueObject;
 
-                            return 'expressions.currentUser.' + queryParts.join('.');
+                    } else {
+                        extendedExpression.currentUser[name] = value;
+                    }
+
+                    scope.expressions = utils.deepExtend(extendedExpression, scope.expressions);
+                }
+
+            }
+
+            return {
+
+                resolve: function(expression, scope) {
+
+                    return SharePoint.getCurrentWeb().then(function(web) {
+                    
+                        return web.getList('UserInfoList').then(function(list) {
+
+                            var queryParts = getExpressionParts(expression);
+
+                            return list.getItemProperty(_spPageContextInfo.userId, queryParts.join('/')).then(function(data) {
+
+                                var value = data[queryParts[queryParts.length - 1]];
+                                createExpressionValue(scope, queryParts, value);
+                                return 'expressions.currentUser.' + queryParts.join('.');
+
+                            }, function() {
+
+                                return 'expressions.currentUser.' + queryParts.join('.');
+                            });
                         });
                     });
-                });
-            }
+                }
 
-        };
+            };
 
-    }
-]);
+        }
+    ]);
 
+})();

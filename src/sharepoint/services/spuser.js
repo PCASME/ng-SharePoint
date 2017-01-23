@@ -19,10 +19,13 @@
  */
 
 
+;(function() {
 
-angular.module('ngSharePoint').factory('SPUser', 
+	angular
+		.module('ngSharePoint')
+		.factory('SPUser', SPUser_Factory);
 
-	['$q', 'SPObjectProvider', 'SPHttp', 
+	SPUser_Factory.$inject = ['$q', 'SPObjectProvider', 'SPHttp'];
 
 	function SPUser_Factory($q, SPObjectProvider, SPHttp) {
 
@@ -119,8 +122,8 @@ angular.module('ngSharePoint').factory('SPUser',
 		 * // this SharePoint environtment variable to retrieve current user information
 		 * var currentUser = new SPUser(currentWeb, _spPageContextInfo.userId);
 		 * currentUser.getProperties().then(function() {
-	     * 
-	     *   if (currentUser.IsSiteAdmin) {
+		 * 
+		 *   if (currentUser.IsSiteAdmin) {
 		 *      // ...
 		 *   }
 		 * });
@@ -134,7 +137,7 @@ angular.module('ngSharePoint').factory('SPUser',
 			return SPHttp.get(url).then(function(data) {
 
 				utils.cleanDeferredProperties(data);
-				
+
 				angular.extend(self, data);
 				self.LoginName = self.Name;
 
@@ -146,16 +149,16 @@ angular.module('ngSharePoint').factory('SPUser',
 
 
 		/**
-	     * @ngdoc function
-	     * @name ngSharePoint.SPUser#getGroups
-	     * @methodOf ngSharePoint.SPUser
-	     *
-	     * @description
-	     * Retrieves the asociated user groups and returns an
-	     * array of {@link ngSharePoint.SPGroup SPGroup} objects.
-	     *
-	     * @returns {promise} promise with an array of {@link ngSharePoint.SPGroup SPGroup} objects.
-	     *
+		 * @ngdoc function
+		 * @name ngSharePoint.SPUser#getGroups
+		 * @methodOf ngSharePoint.SPUser
+		 *
+		 * @description
+		 * Retrieves the asociated user groups and returns an
+		 * array of {@link ngSharePoint.SPGroup SPGroup} objects.
+		 *
+		 * @returns {promise} promise with an array of {@link ngSharePoint.SPGroup SPGroup} objects.
+		 *
 		 * @example
 		 * <pre>
 		 *
@@ -167,8 +170,8 @@ angular.module('ngSharePoint').factory('SPUser',
 		 *		  user.getGropus().then(function(groups) {
 		 *       
 		 *        	angular.forEach(groups, function(group) {
-	     *           
-	     *           	console.log(group.Title + ' ' + group.Description);
+		 *           
+		 *           	console.log(group.Title + ' ' + group.Description);
 		 *        	});
 		 *		  });
 		 *     });
@@ -198,8 +201,9 @@ angular.module('ngSharePoint').factory('SPUser',
 		};
 
 
-				// Returns the SPUserObj class
+		// Returns the SPUserObj class
 		return SPUserObj;
 
 	}
-]);
+
+})();

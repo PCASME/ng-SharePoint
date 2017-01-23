@@ -14,10 +14,16 @@
 //	SPFieldLabel
 ///////////////////////////////////////
 
-angular.module('ngSharePoint').directive('spfieldLabel', 
+;(function() {
 
-	[
+	angular
+		.module('ngSharePoint')
+		.directive('spfieldLabel', spfieldLabel_DirectiveFactory);
 
+	spfieldLabel_DirectiveFactory.$inject = [];
+
+
+    /* @ngInject */
 	function spfieldLabel_DirectiveFactory() {
 
 		var spfieldLabel_DirectiveDefinitionObject = {
@@ -33,51 +39,51 @@ angular.module('ngSharePoint').directive('spfieldLabel',
 
 			link: function($scope, $element, $attrs, spformController) {
 
-				if (spformController === null) return;
+					if (spformController === null) return;
 
-				$scope.schema = spformController.getFieldSchema($attrs.name);
+					$scope.schema = spformController.getFieldSchema($attrs.name);
 
-				// Sets the field label
-				if ($attrs.label !== void 0) {
+					// Sets the field label
+					if ($attrs.label !== void 0) {
 
-					// Custom label
-					$scope.label = $attrs.label;
+						// Custom label
+						$scope.label = $attrs.label;
 
-				} else {
+					} else {
 
-					// Default label
-					// If no 'label' attribute specified assigns the 'Title' property from the field schema as label.
+						// Default label
+						// If no 'label' attribute specified assigns the 'Title' property from the field schema as label.
+						$scope.$watch(function() {
+
+							return ($scope.schema ? $scope.schema.Title : '');
+
+						}, function(newValue) {
+
+							$scope.label = newValue;
+						});
+					}
+
+
+					// ****************************************************************************
+					// Watch for form mode changes.
+					//
 					$scope.$watch(function() {
 
-						return ($scope.schema ? $scope.schema.Title : '');
+						return $scope.mode || spformController.getFormMode();
 
 					}, function(newValue) {
 
-						$scope.label = newValue;
+						$scope.currentMode = newValue;
+
 					});
-				}
 
-
-				// ****************************************************************************
-				// Watch for form mode changes.
-				//
-				$scope.$watch(function() {
-
-					return $scope.mode || spformController.getFormMode();
-
-				}, function(newValue) {
-
-					$scope.currentMode = newValue;
-
-				});
-
-			} // link
+				} // link
 
 		}; // Directive definition object
 
 
 		return spfieldLabel_DirectiveDefinitionObject;
-	
+
 	} // Directive factory
 
-]);
+})();

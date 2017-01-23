@@ -14,16 +14,22 @@
 //  unsafe
 ///////////////////////////////////////
 
-angular.module('ngSharePoint').filter('unsafe', 
+;(function() {
+    angular
+        .module('ngSharePoint')
+        .filter('unsafe', unsafe_Filter);
 
-    ['$sce', 
+    unsafe_Filter.$inject = ['$sce'];
 
+
+    /* @ngInject */
     function unsafe_Filter($sce) {
 
         return function(val) {
 
             return $sce.trustAsHtml(val);
         };
-        
+
     }
-]);
+
+})();

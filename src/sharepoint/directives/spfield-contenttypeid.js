@@ -14,86 +14,93 @@
 //	SPFieldContenttypeid
 ///////////////////////////////////////
 
-angular.module('ngSharePoint').directive('spfieldContenttypeid', 
+;(function() {
 
-	['SPFieldDirective', '$q', '$http', '$templateCache', '$compile', '$filter', '$location', '$window',
+    angular
+        .module('ngSharePoint')
+        .directive('spfieldContenttypeid', spfieldFile_DirectiveFactory);
 
-	function spfieldFile_DirectiveFactory(SPFieldDirective, $q, $http, $templateCache, $compile, $filter, $location, $window) {
-
-		var spfieldFile_DirectiveDefinitionObject = {
-
-			restrict: 'EA',
-			require: ['^spform', 'ngModel'],
-			replace: true,
-			scope: {
-				mode: '@'
-			},
-			templateUrl: 'templates/form-templates/spfield-control.html',
+    spfieldFile_DirectiveFactory.$inject = ['SPFieldDirective', '$q', '$http', '$templateCache', '$compile', '$filter', '$location', '$window'];
 
 
-			link: function($scope, $element, $attrs, controllers) {
+    /* @ngInject */
+    function spfieldFile_DirectiveFactory(SPFieldDirective, $q, $http, $templateCache, $compile, $filter, $location, $window) {
 
-				var directive = {
-					
-					fieldTypeName: 'contenttypeid',
-					replaceAll: false,
+        var spfieldFile_DirectiveDefinitionObject = {
 
-                    init: function() {
-
-                        $scope.ContentTypes = $filter('filter')($scope.item.list.ContentTypes, function(ct) {
-                        	// Not hidden or folder based content types
-                        	if (ct.Hidden) return false;
-                        	if (ct.StringId.substr(0,6) === '0x0120') return false;
-                        	return true;
-                        });
-                        $scope.selectedContentType = null;
-                    },
-
-                    renderFn: function() {
-
-                    	$scope.value = $scope.modelCtrl.$viewValue;
-                    	$scope.schema.Title = $scope.item.list.Fields.ContentType.Title;
-
-                    	var cts = $filter('filter')($scope.ContentTypes, { StringId: $scope.modelCtrl.$viewValue});
-                    	if (cts.length > 0) {
-                    		$scope.selectedContentType = cts[0];
-                    		$scope.schema.Description = $scope.selectedContentType.Description;
-                    	}
-                    },
-				};
+            restrict: 'EA',
+            require: ['^spform', 'ngModel'],
+            replace: true,
+            scope: {
+                mode: '@'
+            },
+            templateUrl: 'templates/form-templates/spfield-control.html',
 
 
-				SPFieldDirective.baseLinkFn.apply(directive, arguments);
+            link: function($scope, $element, $attrs, controllers) {
 
-				$scope.contentTypeChanged = function() {
+                    var directive = {
 
-					if ($scope.value !== $scope.modelCtrl.$viewValue) {
+                        fieldTypeName: 'contenttypeid',
+                        replaceAll: false,
 
-                        /**
-                         * If user changes the ContentType the complete
-                         * form must be refreshed
-                         */
-                        var currentContentType = utils.getQueryStringParameter('ContentTypeId');
-                        if (currentContentType === $scope.value) return;
+                        init: function() {
 
-                        if (currentContentType === undefined) {
-                            $window.location.href = $window.location.href + '&ContentTypeId=' + $scope.value;
-                        } else {
-                            $window.location.href = $window.location.href.replace(currentContentType, $scope.value);
+                            $scope.ContentTypes = $filter('filter')($scope.item.list.ContentTypes, function(ct) {
+                                // Not hidden or folder based content types
+                                if (ct.Hidden) return false;
+                                if (ct.StringId.substr(0, 6) === '0x0120') return false;
+                                return true;
+                            });
+                            $scope.selectedContentType = null;
+                        },
+
+                        renderFn: function() {
+
+                            $scope.value = $scope.modelCtrl.$viewValue;
+                            $scope.schema.Title = $scope.item.list.Fields.ContentType.Title;
+
+                            var cts = $filter('filter')($scope.ContentTypes, {
+                                StringId: $scope.modelCtrl.$viewValue
+                            });
+                            if (cts.length > 0) {
+                                $scope.selectedContentType = cts[0];
+                                $scope.schema.Description = $scope.selectedContentType.Description;
+                            }
+                        },
+                    };
+
+
+                    SPFieldDirective.baseLinkFn.apply(directive, arguments);
+
+                    $scope.contentTypeChanged = function() {
+
+                        if ($scope.value !== $scope.modelCtrl.$viewValue) {
+
+                            /**
+                             * If user changes the ContentType the complete
+                             * form must be refreshed
+                             */
+                            var currentContentType = utils.getQueryStringParameter('ContentTypeId');
+                            if (currentContentType === $scope.value) return;
+
+                            if (currentContentType === undefined) {
+                                $window.location.href = $window.location.href + '&ContentTypeId=' + $scope.value;
+                            } else {
+                                $window.location.href = $window.location.href.replace(currentContentType, $scope.value);
+                            }
                         }
-                    }
 
-//					$scope.modelCtrl.$setViewValue($scope.value);
-				};
+                        //					$scope.modelCtrl.$setViewValue($scope.value);
+                    };
 
-			} // link
+                } // link
 
-		}; // Directive definition object
+        }; // Directive definition object
 
 
-		return spfieldFile_DirectiveDefinitionObject;
+        return spfieldFile_DirectiveDefinitionObject;
 
-	} // Directive factory
+    } // Directive factory
 
-]);
-
+})();

@@ -14,10 +14,14 @@
 //  SPConfig
 ///////////////////////////////////////
 
-angular.module('ngSharePoint').provider('SPConfig', 
+;(function() {
 
-    [
-    
+    angular
+        .module('ngSharePoint')
+        .provider('SPConfig', SPConfig_Provider);
+
+    SPConfig_Provider.$inject = [];
+
     function SPConfig_Provider() {
 
         'use strict';
@@ -106,7 +110,7 @@ angular.module('ngSharePoint').provider('SPConfig',
 
                             // Process the array of resources filenames
                             angular.forEach(resources, function(resource) {
-                                
+
                                 if (angular.isString(resource)) {
 
                                     _filenames.push(resource);
@@ -139,16 +143,16 @@ angular.module('ngSharePoint').provider('SPConfig',
             })()
         };
 
-        
+
         self.$get = function() {
 
-            var Settings = function() {
-            };
+            var Settings = function() {};
 
             Settings.options = self.options;
-            
+
             return Settings;
         };
 
     }
-]);
+
+})();

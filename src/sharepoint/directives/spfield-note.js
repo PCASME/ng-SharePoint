@@ -14,10 +14,16 @@
 //  SPFieldNote
 ///////////////////////////////////////
 
-angular.module('ngSharePoint').directive('spfieldNote',
+;(function() {
 
-    ['SPFieldDirective', 'SPUtils', '$q', '$timeout',
+    angular
+        .module('ngSharePoint')
+        .directive('spfieldNote', spfielNote_DirectiveFactory);
 
+    spfielNote_DirectiveFactory.$inject = ['SPFieldDirective', 'SPUtils', '$q', '$timeout'];
+
+
+    /* @ngInject */
     function spfielNote_DirectiveFactory(SPFieldDirective, SPUtils, $q, $timeout) {
 
         var spfieldNote_DirectiveDefinitionObject = {
@@ -34,184 +40,184 @@ angular.module('ngSharePoint').directive('spfieldNote',
             link: function($scope, $element, $attrs, controllers) {
 
 
-                var directive = {
+                    var directive = {
 
-                    fieldTypeName: 'note',
-                    replaceAll: false,
+                        fieldTypeName: 'note',
+                        replaceAll: false,
 
-                    init: function() {
+                        init: function() {
 
-                        var xml = SPUtils.parseXmlString($scope.schema.SchemaXml);
-                        $scope.rteFullHtml = xml.documentElement.getAttribute('RichTextMode') == 'FullHtml';
-                        $scope.rteHelpMessage = STSHtmlEncode(Strings.STS.L_RichTextHelpLink);
-                        $scope.rteLabelText = STSHtmlEncode(Strings.STS.L_RichTextHiddenLabelText);
-                        $scope.cultureInfo = (typeof __cultureInfo == 'undefined' ? Sys.CultureInfo.CurrentCulture : __cultureInfo);
+                            var xml = SPUtils.parseXmlString($scope.schema.SchemaXml);
+                            $scope.rteFullHtml = xml.documentElement.getAttribute('RichTextMode') == 'FullHtml';
+                            $scope.rteHelpMessage = STSHtmlEncode(Strings.STS.L_RichTextHelpLink);
+                            $scope.rteLabelText = STSHtmlEncode(Strings.STS.L_RichTextHiddenLabelText);
+                            $scope.cultureInfo = (typeof __cultureInfo == 'undefined' ? Sys.CultureInfo.CurrentCulture : __cultureInfo);
 
-                        // Check if the field have the option "Append Changes to Existing Text" activated.
-                        if ($scope.schema.AppendOnly) {
+                            // Check if the field have the option "Append Changes to Existing Text" activated.
+                            if ($scope.schema.AppendOnly) {
 
-                            $scope.versions = [];
+                                $scope.versions = [];
 
-                            $scope.item.list.getDefaultViewUrl().then(function(defaultViewUrl) {
+                                $scope.item.list.getDefaultViewUrl().then(function(defaultViewUrl) {
 
-                                $scope.defaultViewUrl = defaultViewUrl;
+                                    $scope.defaultViewUrl = defaultViewUrl;
 
-                                getFieldVersions().then(function(versions) {
+                                    getFieldVersions().then(function(versions) {
 
-                                    $scope.versions = versions || [];
+                                        $scope.versions = versions || [];
 
-                                });
-
-                            });
-
-                        }
-
-                    },
-
-                    renderFn: function() {
-
-                        $scope.value = $scope.modelCtrl.$viewValue;
-
-                        if ($scope.rteFullHtml) {
-
-                            $timeout(function() {
-
-                                var rteElement = document.getElementById($scope.schema.EntityPropertyName + '_' + $scope.schema.Id + '_$TextField_inplacerte');
-
-                                if (rteElement) {
-
-                                    // Init the 'contenteditable' value
-                                    rteElement.innerHTML = $scope.value || '';
-
-                                }
-
-                            });
-
-                        }
-
-                    },
-
-                    formatterFn: function(modelValue) {
-
-						$scope.formCtrl.fieldValueChanged($scope.schema.InternalName, modelValue, $scope.lastValue);
-						$scope.lastValue = modelValue;
-
-                        return modelValue;
-                    },
-
-					parserFn: function(viewValue) {
-
-						// Calls the 'fieldValueChanged' method in the SPForm controller to broadcast to all child elements.
-						$scope.formCtrl.fieldValueChanged($scope.schema.InternalName, viewValue, $scope.lastValue);
-						$scope.lastValue = viewValue;
-
-						return viewValue;
-                    }
-
-                };
-
-
-                SPFieldDirective.baseLinkFn.apply(directive, arguments);
-
-
-
-                $scope.updateModel = function($event) {
-
-                    var rteElement = document.getElementById($scope.schema.EntityPropertyName + '_' + $scope.schema.Id + '_$TextField_inplacerte');
-
-                    if (rteElement) {
-
-                        $scope.modelCtrl.$setViewValue(rteElement.innerHTML);
-//                        $scope.value = rteElement.innerHTML;
-
-                    }
-
-                };
-
-
-
-                function getFieldVersions() {
-
-                    var deferred = $q.defer();
-
-                    // SharePoint Service <web_url>/_vti_bin/lists.asmx?op=GetVersionCollection
-                    var soapCall = '<soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">';
-                    soapCall += '<soap:Body>';
-                    soapCall += '<GetVersionCollection xmlns="http://schemas.microsoft.com/sharepoint/soap/">';
-                    soapCall += '<strlistID>' + $scope.item.list.Id + '</strlistID>';
-                    soapCall += '<strlistItemID>' + $scope.item.Id + '</strlistItemID>';
-                    soapCall += '<strFieldName>' + $scope.schema.EntityPropertyName + '</strFieldName>';
-                    soapCall += '</GetVersionCollection>';
-                    soapCall += '</soap:Body>';
-                    soapCall += '</soap:Envelope>';
-
-                    $.ajax({
-                        url: $scope.item.list.web.url.rtrim('/') + '/_vti_bin/lists.asmx',
-                        type: "POST",
-                        data: soapCall,
-                        dataType: "xml",
-                        contentType: "text/xml;charset='utf-8'",
-                        complete: function(result, status) {
-
-                            if (result.status == 200) {
-
-                                var resultXml = SPUtils.parseXmlString(result.responseText);
-                                var versionNodeCollection = resultXml.getElementsByTagName('Version');
-                                var versions = [];
-
-                                angular.forEach(versionNodeCollection, function(versionNode) {
-
-                                    // Parse the 'Editor' attribute
-                                    var editorAttribute = versionNode.getAttribute('Editor');
-                                    var editor = {
-                                        id: 0,
-                                        name: ''
-                                    };
-
-                                    if (editorAttribute) {
-
-                                        var editorValues = editorAttribute.split(',');
-
-                                        if (editorValues.length > 0) {
-
-                                            var editorData = editorValues[0].split(';#');
-
-                                            editor.id = editorData[0];
-                                            editor.name = editorData[1];
-
-                                        }
-
-                                    }
-
-                                    var version = {
-                                        value: versionNode.getAttribute($scope.schema.EntityPropertyName),
-                                        modified: versionNode.getAttribute('Modified'),
-                                        editor: editor
-                                    };
-
-                                    versions.push(version);
+                                    });
 
                                 });
-
-
-                                deferred.resolve(versions);
-
-                            } else {
-
-                                deferred.reject();
 
                             }
 
+                        },
+
+                        renderFn: function() {
+
+                            $scope.value = $scope.modelCtrl.$viewValue;
+
+                            if ($scope.rteFullHtml) {
+
+                                $timeout(function() {
+
+                                    var rteElement = document.getElementById($scope.schema.EntityPropertyName + '_' + $scope.schema.Id + '_$TextField_inplacerte');
+
+                                    if (rteElement) {
+
+                                        // Init the 'contenteditable' value
+                                        rteElement.innerHTML = $scope.value || '';
+
+                                    }
+
+                                });
+
+                            }
+
+                        },
+
+                        formatterFn: function(modelValue) {
+
+                            $scope.formCtrl.fieldValueChanged($scope.schema.InternalName, modelValue, $scope.lastValue);
+                            $scope.lastValue = modelValue;
+
+                            return modelValue;
+                        },
+
+                        parserFn: function(viewValue) {
+
+                            // Calls the 'fieldValueChanged' method in the SPForm controller to broadcast to all child elements.
+                            $scope.formCtrl.fieldValueChanged($scope.schema.InternalName, viewValue, $scope.lastValue);
+                            $scope.lastValue = viewValue;
+
+                            return viewValue;
                         }
 
-                    });
+                    };
 
 
-                    return deferred.promise;
+                    SPFieldDirective.baseLinkFn.apply(directive, arguments);
 
-                } // getFieldVersions
 
-            } // link
+
+                    $scope.updateModel = function($event) {
+
+                        var rteElement = document.getElementById($scope.schema.EntityPropertyName + '_' + $scope.schema.Id + '_$TextField_inplacerte');
+
+                        if (rteElement) {
+
+                            $scope.modelCtrl.$setViewValue(rteElement.innerHTML);
+                            //                        $scope.value = rteElement.innerHTML;
+
+                        }
+
+                    };
+
+
+
+                    function getFieldVersions() {
+
+                        var deferred = $q.defer();
+
+                        // SharePoint Service <web_url>/_vti_bin/lists.asmx?op=GetVersionCollection
+                        var soapCall = '<soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">';
+                        soapCall += '<soap:Body>';
+                        soapCall += '<GetVersionCollection xmlns="http://schemas.microsoft.com/sharepoint/soap/">';
+                        soapCall += '<strlistID>' + $scope.item.list.Id + '</strlistID>';
+                        soapCall += '<strlistItemID>' + $scope.item.Id + '</strlistItemID>';
+                        soapCall += '<strFieldName>' + $scope.schema.EntityPropertyName + '</strFieldName>';
+                        soapCall += '</GetVersionCollection>';
+                        soapCall += '</soap:Body>';
+                        soapCall += '</soap:Envelope>';
+
+                        $.ajax({
+                            url: $scope.item.list.web.url.rtrim('/') + '/_vti_bin/lists.asmx',
+                            type: "POST",
+                            data: soapCall,
+                            dataType: "xml",
+                            contentType: "text/xml;charset='utf-8'",
+                            complete: function(result, status) {
+
+                                if (result.status == 200) {
+
+                                    var resultXml = SPUtils.parseXmlString(result.responseText);
+                                    var versionNodeCollection = resultXml.getElementsByTagName('Version');
+                                    var versions = [];
+
+                                    angular.forEach(versionNodeCollection, function(versionNode) {
+
+                                        // Parse the 'Editor' attribute
+                                        var editorAttribute = versionNode.getAttribute('Editor');
+                                        var editor = {
+                                            id: 0,
+                                            name: ''
+                                        };
+
+                                        if (editorAttribute) {
+
+                                            var editorValues = editorAttribute.split(',');
+
+                                            if (editorValues.length > 0) {
+
+                                                var editorData = editorValues[0].split(';#');
+
+                                                editor.id = editorData[0];
+                                                editor.name = editorData[1];
+
+                                            }
+
+                                        }
+
+                                        var version = {
+                                            value: versionNode.getAttribute($scope.schema.EntityPropertyName),
+                                            modified: versionNode.getAttribute('Modified'),
+                                            editor: editor
+                                        };
+
+                                        versions.push(version);
+
+                                    });
+
+
+                                    deferred.resolve(versions);
+
+                                } else {
+
+                                    deferred.reject();
+
+                                }
+
+                            }
+
+                        });
+
+
+                        return deferred.promise;
+
+                    } // getFieldVersions
+
+                } // link
 
         }; // Directive definition object
 
@@ -220,4 +226,4 @@ angular.module('ngSharePoint').directive('spfieldNote',
 
     } // Directive factory
 
-]);
+})();

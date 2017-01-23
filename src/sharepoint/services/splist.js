@@ -15,10 +15,13 @@
  *
  */
 
+;(function() {
 
-angular.module('ngSharePoint').factory('SPList',
+    angular
+        .module('ngSharePoint')
+        .factory('SPList', SPList_Factory);
 
-    ['$q', 'SPCache', 'SPFolder', 'SPListItem', 'SPContentType', 'SPObjectProvider',
+    SPList_Factory.$inject = ['$q', 'SPCache', 'SPFolder', 'SPListItem', 'SPContentType', 'SPObjectProvider'];
 
     function SPList_Factory($q, SPCache, SPFolder, SPListItem, SPContentType, SPObjectProvider) {
 
@@ -291,7 +294,6 @@ angular.module('ngSharePoint').factory('SPList',
 
 
 
-
         /**
          * @ngdoc function
          * @name ngSharePoint.SPList#updateProperties
@@ -347,7 +349,7 @@ angular.module('ngSharePoint').factory('SPList',
                 "content-type": "application/json;odata=verbose",
                 "X-HTTP-Method": "MERGE",
                 "IF-MATCH": "*" // Overwrite any changes in the item.
-                                // Use 'item.__metadata.etag' to provide a way to verify that the object being changed has not been changed since it was last retrieved.
+                    // Use 'item.__metadata.etag' to provide a way to verify that the object being changed has not been changed since it was last retrieved.
             };
 
             var requestDigest = document.getElementById('__REQUESTDIGEST');
@@ -394,7 +396,6 @@ angular.module('ngSharePoint').factory('SPList',
             return def.promise;
 
         }; // updateProperties
-
 
 
 
@@ -514,7 +515,6 @@ angular.module('ngSharePoint').factory('SPList',
 
 
 
-
         /**
          * @ngdoc function
          * @name ngSharePoint.SPList#getContentTypes
@@ -539,7 +539,7 @@ angular.module('ngSharePoint').factory('SPList',
          *   });
          * </pre>
          *
-        */
+         */
         SPListObj.prototype.getContentTypes = function() {
 
             var self = this;
@@ -629,7 +629,7 @@ angular.module('ngSharePoint').factory('SPList',
          *   });
          * </pre>
          *
-        */
+         */
         SPListObj.prototype.getContentType = function(contentTypeID) {
 
             var self = this;
@@ -666,7 +666,6 @@ angular.module('ngSharePoint').factory('SPList',
 
 
 
-
         /**
          * @ngdoc function
          * @name ngSharePoint.SPList#getRootFolder
@@ -690,7 +689,7 @@ angular.module('ngSharePoint').factory('SPList',
          *   });
          * </pre>
          *
-        */
+         */
         SPListObj.prototype.getRootFolder = function() {
 
             var self = this;
@@ -740,7 +739,6 @@ angular.module('ngSharePoint').factory('SPList',
 
 
 
-
         /**
          * @ngdoc function
          * @name ngSharePoint.SPList#getWorkflowAssociationByName
@@ -764,7 +762,7 @@ angular.module('ngSharePoint').factory('SPList',
          *   });
          * </pre>
          *
-        */
+         */
         SPListObj.prototype.getWorkflowAssociationByName = function(workflowName) {
 
             var self = this;
@@ -808,7 +806,7 @@ angular.module('ngSharePoint').factory('SPList',
 
             return def.promise;
 
-        };  // getWorkflowAssociationByName
+        }; // getWorkflowAssociationByName
 
         /**
          * @ngdoc function
@@ -832,13 +830,13 @@ angular.module('ngSharePoint').factory('SPList',
          *   });
          * </pre>
          *
-        */
+         */
         SPListObj.prototype.renderListData = function(viewXml) {
 
             var self = this;
             var def = $q.defer();
             var executor = new SP.RequestExecutor(self.web.url);
-			// Set the headers for the REST API call.
+            // Set the headers for the REST API call.
             // ----------------------------------------------------------------------------
             var headers = {
                 "Accept": "application/json; odata=verbose",
@@ -848,19 +846,21 @@ angular.module('ngSharePoint').factory('SPList',
             // Make the call.
             // ----------------------------------------------------------------------------
             executor.executeAsync({
-				url: self.apiUrl + "/renderlistdata()",
+                url: self.apiUrl + "/renderlistdata()",
                 method: 'POST',
-                body: angular.toJson({viewXml: viewXml}),
+                body: angular.toJson({
+                    viewXml: viewXml
+                }),
                 headers: headers,
                 success: function(data) {
-	                var d = angular.fromJson(utils.parseSPResponse(data).RenderListData);
+                    var d = angular.fromJson(utils.parseSPResponse(data).RenderListData);
                     angular.forEach(d.Row, function(item) {
-						// convert single arrays to object
-				        angular.forEach(item, function(value, key) {
-				            if (angular.isArray(value) && value.length === 1) {
-				            	item[key] = value[0];
-				            }
-				        });
+                        // convert single arrays to object
+                        angular.forEach(item, function(value, key) {
+                            if (angular.isArray(value) && value.length === 1) {
+                                item[key] = value[0];
+                            }
+                        });
                     });
                     def.resolve(d.Row);
                 },
@@ -877,7 +877,7 @@ angular.module('ngSharePoint').factory('SPList',
 
             return def.promise;
 
-        };  // renderListData
+        }; // renderListData
 
 
 
@@ -968,7 +968,7 @@ angular.module('ngSharePoint').factory('SPList',
          *      }).then(...);
          * </pre>
          *
-        */
+         */
         SPListObj.prototype.getListItems = function(query, resetPagination) {
 
             var self = this;
@@ -984,12 +984,12 @@ angular.module('ngSharePoint').factory('SPList',
             } else {
 
                 if (query) {
-	    		/*
+                    /*
                     if (query.$expand !== void 0) {
                         // previous expanded
                         query.$expand = query.$expand.substring(0, query.$expand.lastIndexOf(defaultExpandProperties));
                     }
-		    */
+            */
                     query.$expand = defaultExpandProperties + (query.$expand ? ',' + query.$expand : '');
                 } else {
                     query = {
@@ -1062,7 +1062,6 @@ angular.module('ngSharePoint').factory('SPList',
 
 
 
-
         /**
          * @ngdoc function
          * @name ngSharePoint.SPList#getListItemsCAML
@@ -1083,7 +1082,9 @@ angular.module('ngSharePoint').factory('SPList',
 
             var payload = {
                 'query': {
-                    '__metadata': { 'type': 'SP.CamlQuery' },
+                    '__metadata': {
+                        'type': 'SP.CamlQuery'
+                    },
                     'ViewXml': caml
                 }
             };
@@ -1136,8 +1137,6 @@ angular.module('ngSharePoint').factory('SPList',
 
 
 
-
-
         /**
          * @ngdoc function
          * @name ngSharePoint.SPList#getItemById
@@ -1178,7 +1177,7 @@ angular.module('ngSharePoint').factory('SPList',
          *
          * </pre>
          *
-        */
+         */
         SPListObj.prototype.getItemById = function(ID, expandProperties) {
 
             var self = this;
@@ -1363,7 +1362,7 @@ angular.module('ngSharePoint').factory('SPList',
          *   list.getItemProperty(ID, 'Created/Department/Manager/EMail');
          * </pre>
          *
-        */
+         */
         SPListObj.prototype.getItemProperty = function(ID, query) {
 
             var self = this;
@@ -1402,7 +1401,6 @@ angular.module('ngSharePoint').factory('SPList',
 
 
 
-
         /**
          * @ngdoc function
          * @name ngSharePoint.SPList#getDefaultViewUrl
@@ -1416,7 +1414,7 @@ angular.module('ngSharePoint').factory('SPList',
          *
          * @returns {promise} promise with the url.
          *
-        */
+         */
         SPListObj.prototype.getDefaultViewUrl = function() {
 
             var self = this;
@@ -1465,8 +1463,7 @@ angular.module('ngSharePoint').factory('SPList',
 
             return def.promise;
 
-        };   // getDefaultViewUrl
-
+        }; // getDefaultViewUrl
 
 
 
@@ -1483,7 +1480,7 @@ angular.module('ngSharePoint').factory('SPList',
          *
          * @returns {promise} promise with the url.
          *
-        */
+         */
         SPListObj.prototype.getDefaultEditFormUrl = function() {
 
             var self = this;
@@ -1532,8 +1529,7 @@ angular.module('ngSharePoint').factory('SPList',
 
             return def.promise;
 
-        };   // getDefaultEditFormUrl
-
+        }; // getDefaultEditFormUrl
 
 
 
@@ -1550,7 +1546,7 @@ angular.module('ngSharePoint').factory('SPList',
          *
          * @returns {promise} promise with the url.
          *
-        */
+         */
         SPListObj.prototype.getDefaultDisplayFormUrl = function() {
 
             var self = this;
@@ -1599,8 +1595,7 @@ angular.module('ngSharePoint').factory('SPList',
 
             return def.promise;
 
-        };   // getDefaultDisplayFormUrl
-
+        }; // getDefaultDisplayFormUrl
 
 
 
@@ -1617,7 +1612,7 @@ angular.module('ngSharePoint').factory('SPList',
          *
          * @returns {promise} promise with the url.
          *
-        */
+         */
         SPListObj.prototype.getDefaultNewFormUrl = function() {
 
             var self = this;
@@ -1666,7 +1661,7 @@ angular.module('ngSharePoint').factory('SPList',
 
             return def.promise;
 
-        };   // getDefaultNewFormUrl
+        }; // getDefaultNewFormUrl
 
 
 
@@ -1782,7 +1777,7 @@ angular.module('ngSharePoint').factory('SPList',
                     "content-type": "application/json;odata=verbose",
                     "X-HTTP-Method": "MERGE",
                     "IF-MATCH": "*" // Overwrite any changes in the item.
-                                    // Use 'item.__metadata.etag' to provide a way to verify that the object being changed has not been changed since it was last retrieved.
+                        // Use 'item.__metadata.etag' to provide a way to verify that the object being changed has not been changed since it was last retrieved.
                 };
 
                 var requestDigest = document.getElementById('__REQUESTDIGEST');
@@ -1893,4 +1888,5 @@ angular.module('ngSharePoint').factory('SPList',
         return SPListObj;
 
     }
-]);
+
+})();

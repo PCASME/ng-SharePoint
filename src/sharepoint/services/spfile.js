@@ -10,36 +10,39 @@
  * *Documentation is pending*
  */
 
+;(function() {
 
-angular.module('ngSharePoint').factory('SPFile', 
+	angular
+		.module('ngSharePoint')
+		.factory('SPFile', SPFile_Factory);
 
-	['SPObjectProvider', '$q', '$http', 
+	SPFile_Factory.$inject = ['SPObjectProvider', '$q', '$http'];
 
 	function SPFile_Factory(SPObjectProvider, $q, $http) {
 
 		'use strict';
 
 
-        /**
-         * @ngdoc function
-         * @name ngSharePoint.SPFile#constructor
-         * @constructor
-         * @methodOf ngSharePoint.SPFile
-         *
-         * @description
-         * Instantiates a new `SPFile` object for a specific SharePoint file in the server. It's possible
-         * to specify their properties.
-         *
-         * By default, in document and picture libraries, when you call {@link ngSharePoint.SPList#getListItems getListItems} or 
-         * {@link ngSharePoint.SPList#getItemById getItemById}, by default an ´item.File´ property are created and contains
-         * file information.
-         *
-         * @param {SPWeb} web A valid {@link ngSharePoint.SPWeb SPWeb} object where the file is stored.
-         * @param {string} path The server relative path of the file.
-         * @param {object} fileProperties Properties to initialize the object
-         *
-         */
- 		var SPFileObj = function(web, path, fileProperties) {
+		/**
+		 * @ngdoc function
+		 * @name ngSharePoint.SPFile#constructor
+		 * @constructor
+		 * @methodOf ngSharePoint.SPFile
+		 *
+		 * @description
+		 * Instantiates a new `SPFile` object for a specific SharePoint file in the server. It's possible
+		 * to specify their properties.
+		 *
+		 * By default, in document and picture libraries, when you call {@link ngSharePoint.SPList#getListItems getListItems} or 
+		 * {@link ngSharePoint.SPList#getItemById getItemById}, by default an ´item.File´ property are created and contains
+		 * file information.
+		 *
+		 * @param {SPWeb} web A valid {@link ngSharePoint.SPWeb SPWeb} object where the file is stored.
+		 * @param {string} path The server relative path of the file.
+		 * @param {object} fileProperties Properties to initialize the object
+		 *
+		 */
+		var SPFileObj = function(web, path, fileProperties) {
 
 			if (web === void 0) {
 				throw '@web parameter not specified in SPFile constructor.';
@@ -67,7 +70,6 @@ angular.module('ngSharePoint').factory('SPFile',
 
 
 
-
 		// ****************************************************************************
 		// updateAPIUrlById
 		//
@@ -91,8 +93,6 @@ angular.module('ngSharePoint').factory('SPFile',
 
 
 
-
-
 		// ****************************************************************************
 		// getProperties
 		//
@@ -109,20 +109,20 @@ angular.module('ngSharePoint').factory('SPFile',
 			executor.executeAsync({
 
 				url: self.apiUrl + utils.parseQuery(query),
-				method: 'GET', 
-				headers: { 
+				method: 'GET',
+				headers: {
 					"Accept": "application/json; odata=verbose"
-				}, 
+				},
 
 				success: function(data) {
 
 					var d = utils.parseSPResponse(data);
 					utils.cleanDeferredProperties(d);
-					
+
 					angular.extend(self, d);
 
 					def.resolve(self);
-				}, 
+				},
 
 				error: function(data, errorCode, errorMessage) {
 
@@ -172,7 +172,9 @@ angular.module('ngSharePoint').factory('SPFile',
 
 			} else {
 
-				this.getProperties({ $expand: 'ListItemAllFields,ListItemAllFields/ParentList'}).then(function() {
+				this.getProperties({
+					$expand: 'ListItemAllFields,ListItemAllFields/ParentList'
+				}).then(function() {
 
 					var list = SPObjectProvider.getSPList(self.web, self.ListItemAllFields.ParentList.Id, self.ListItemAllFields.ParentList);
 					self.List = list;
@@ -182,8 +184,7 @@ angular.module('ngSharePoint').factory('SPFile',
 
 			return def.promise;
 
-		};	// getList
-
+		}; // getList
 
 
 
@@ -207,7 +208,9 @@ angular.module('ngSharePoint').factory('SPFile',
 
 				if (this.List !== void 0) {
 
-					this.getProperties({ $expand: 'ListItemAllFields,ListItemAllFields/ParentList'}).then(function() {
+					this.getProperties({
+						$expand: 'ListItemAllFields,ListItemAllFields/ParentList'
+					}).then(function() {
 
 						self.ListItem = SPObjectProvider.getSPListItem(self.List, self.ListItemAllFields);
 						self.updateAPIUrlById(self.List, self.ListItem.Id);
@@ -229,9 +232,7 @@ angular.module('ngSharePoint').factory('SPFile',
 
 			return def.promise;
 
-		};	// getFileListItem
-
-
+		}; // getFileListItem
 
 
 
@@ -289,7 +290,7 @@ angular.module('ngSharePoint').factory('SPFile',
 
 			return def.promise;
 
-		};	// rename
+		}; // rename
 
 
 
@@ -345,7 +346,7 @@ angular.module('ngSharePoint').factory('SPFile',
 
 			return def.promise;
 
-		};	// removeFile
+		}; // removeFile
 
 
 
@@ -357,7 +358,7 @@ angular.module('ngSharePoint').factory('SPFile',
 		// @pathToMove
 		// @returns: Promise with the new SPFile object.
 		//
-		SPFileObj.prototype.moveFile = function (pathToMove) {
+		SPFileObj.prototype.moveFile = function(pathToMove) {
 			var self = this;
 			var def = $q.defer();
 			var headers = {
@@ -368,7 +369,7 @@ angular.module('ngSharePoint').factory('SPFile',
 			if (requestDigest !== null) {
 				headers['X-RequestDigest'] = requestDigest.value;
 			}
-			
+
 			var url = self.apiUrl + '/moveto(newurl=\'' + pathToMove + '/' + self.Name + '\',flags=1)';
 
 			$http({
@@ -399,7 +400,6 @@ angular.module('ngSharePoint').factory('SPFile',
 		}; // moveFile
 
 
-		
 
 		// ****************************************************************************
 		// copyFile
@@ -409,7 +409,7 @@ angular.module('ngSharePoint').factory('SPFile',
 		// @pathToCopy
 		// @return: Promise with the new SPFile object.
 		//
-		SPFileObj.prototype.copyFile = function (pathToCopy) {
+		SPFileObj.prototype.copyFile = function(pathToCopy) {
 			var self = this;
 			var def = $q.defer();
 			var headers = {
@@ -501,7 +501,7 @@ angular.module('ngSharePoint').factory('SPFile',
 
 			return def.promise;
 
-		};	// checkOut
+		}; // checkOut
 
 
 		// ****************************************************************************
@@ -554,7 +554,7 @@ angular.module('ngSharePoint').factory('SPFile',
 
 			return def.promise;
 
-		};	// undoCheckOut
+		}; // undoCheckOut
 
 
 
@@ -619,8 +619,7 @@ angular.module('ngSharePoint').factory('SPFile',
 
 			return def.promise;
 
-		};	// checkIn
-
+		}; // checkIn
 
 
 
@@ -628,4 +627,5 @@ angular.module('ngSharePoint').factory('SPFile',
 		return SPFileObj;
 
 	}
-]);
+
+})();

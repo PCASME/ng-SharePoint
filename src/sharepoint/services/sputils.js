@@ -8,12 +8,15 @@
  * *Documentation is pending*
  */
 
+;(function() {
 
-angular.module('ngSharePoint').factory('SPUtils',
+    angular
+        .module('ngSharePoint')
+        .factory('SPUtils', SPUtils_Factory);
 
-    ['SPConfig', '$q', '$http', '$injector', 'ODataParserProvider',
+    SPUtils_Factory.$inject = ['SPConfig', '$q', '$http', '$injector'/*, 'ODataParserProvider'*/];
 
-    function SPUtils_Factory(SPConfig, $q, $http, $injector, ODataParserProvider) {
+    function SPUtils_Factory(SPConfig, $q, $http, $injector/*, ODataParserProvider*/) {
 
         'use strict';
 
@@ -24,7 +27,7 @@ angular.module('ngSharePoint').factory('SPUtils',
 
 
 
-            inDesignMode: function () {
+            inDesignMode: function() {
                 var publishingEdit = window.g_disableCheckoutInEditMode;
                 var form = document.forms[MSOWebPartPageFormName];
                 var input = form.MSOLayout_InDesignMode || form._wikiPageMode;
@@ -34,7 +37,7 @@ angular.module('ngSharePoint').factory('SPUtils',
 
 
 
-            SharePointReady: function () {
+            SharePointReady: function() {
 
                 var deferred = $q.defer();
                 var self = this;
@@ -53,7 +56,7 @@ angular.module('ngSharePoint').factory('SPUtils',
 
                     // http://mahmoudfarhat.net/post/2013/03/23/SharePoint-2013-ExecuteOrDelayUntilScriptLoaded-not-executing-after-page-publish.aspx
                     // Load sp.js
-                    SP.SOD.executeFunc('sp.js', 'SP.ClientContext', function () {
+                    SP.SOD.executeFunc('sp.js', 'SP.ClientContext', function() {
 
                         var loadScriptPromises = [],
                             loadResourcePromises = [];
@@ -157,7 +160,7 @@ angular.module('ngSharePoint').factory('SPUtils',
                                 window.Resources[name] = window.Res;
                             }
 
-                        } catch(ex) {
+                        } catch (ex) {
 
                             console.error(ex);
                         }
@@ -193,18 +196,18 @@ angular.module('ngSharePoint').factory('SPUtils',
             },
 
 
-
-            generateCamlQuery: function (queryInfo, listSchema) {
-                /*
-                    Formato del objeto de filtro:
-                    {
-                        filter: 'Country eq ' + $routeParams.country + ' and Modified eq [Today]',
-                        orderBy: 'Title asc, Modified desc',
-                        select: 'Title, Country',
-                        top: 10,
-                        pagingInfo: 'Paged=TRUE&p_ID=nnn[&PagedPrev=TRUE]'
-                    }
-                */
+/*
+            generateCamlQuery: function(queryInfo, listSchema) {
+                
+                // Formato del objeto de filtro:
+                // {
+                //     filter: 'Country eq ' + $routeParams.country + ' and Modified eq [Today]',
+                //     orderBy: 'Title asc, Modified desc',
+                //     select: 'Title, Country',
+                //     top: 10,
+                //     pagingInfo: 'Paged=TRUE&p_ID=nnn[&PagedPrev=TRUE]'
+                // }
+            
                 var camlQueryXml = "";
                 var camlQuery;
 
@@ -233,7 +236,7 @@ angular.module('ngSharePoint').factory('SPUtils',
                 }
                 return camlQuery;
             },
-
+*/
 
 
             getRegionalSettings: function() {
@@ -257,7 +260,10 @@ angular.module('ngSharePoint').factory('SPUtils',
 
                     }, function(sender, args) {
 
-                        deferred.reject({ sender: sender, args: args });
+                        deferred.reject({
+                            sender: sender,
+                            args: args
+                        });
                     });
                 });
 
@@ -275,9 +281,11 @@ angular.module('ngSharePoint').factory('SPUtils',
 
                     url: url,
                     method: "POST",
-                    headers: { "Accept": "application/json; odata=verbose"}
+                    headers: {
+                        "Accept": "application/json; odata=verbose"
+                    }
 
-                }).then(function (data) {
+                }).then(function(data) {
 
                     var requestDigest = document.getElementById('__REQUESTDIGEST');
                     if (requestDigest !== null) {
@@ -286,7 +294,7 @@ angular.module('ngSharePoint').factory('SPUtils',
 
                     deferred.resolve(data.data.d.GetContextWebInformation.FormDigestValue);
 
-                }, function (data) {
+                }, function(data) {
                     console.log(data.data);
                     deferred.reject(data.data);
                 });
@@ -314,7 +322,10 @@ angular.module('ngSharePoint').factory('SPUtils',
 
                     }, function(sender, args) {
 
-                        deferred.reject({ sender: sender, args: args });
+                        deferred.reject({
+                            sender: sender,
+                            args: args
+                        });
                     });
                 });
 
@@ -337,7 +348,10 @@ angular.module('ngSharePoint').factory('SPUtils',
 
                 }, function(sender, args) {
 
-                    deferred.reject({ sender: sender, args: args });
+                    deferred.reject({
+                        sender: sender,
+                        args: args
+                    });
                 });
 
                 return deferred.promise;
@@ -364,7 +378,10 @@ angular.module('ngSharePoint').factory('SPUtils',
 
                     }, function(sender, args) {
 
-                        deferred.reject({ sender: sender, args: args });
+                        deferred.reject({
+                            sender: sender,
+                            args: args
+                        });
                     });
                 });
 
@@ -384,7 +401,7 @@ angular.module('ngSharePoint').factory('SPUtils',
                 } else {
 
                     // IE :(
-                    if(xmlDocStr.indexOf("<?") === 0) {
+                    if (xmlDocStr.indexOf("<?") === 0) {
                         xmlDocStr = xmlDocStr.substr(xmlDocStr.indexOf("?>") + 2);
                     }
 
@@ -439,7 +456,9 @@ angular.module('ngSharePoint').factory('SPUtils',
 
                             var followWebSettings = form.querySelector('#ctl00_PlaceHolderMain_ctl08_ChkFollowWebRegionalSettings');
                             if (followWebSettings === null) {
-                                followWebSettings = { checked: false };
+                                followWebSettings = {
+                                    checked: false
+                                };
                             }
 
                             if (followWebSettings.checked) {
@@ -449,7 +468,9 @@ angular.module('ngSharePoint').factory('SPUtils',
 
                             } else {
 
-                                var selectedOption = { value: undefined };
+                                var selectedOption = {
+                                    value: undefined
+                                };
                                 var regionalSettingsSelect = form.querySelector('#ctl00_PlaceHolderMain_ctl02_ctl01_DdlwebLCID');
                                 if (regionalSettingsSelect !== null) {
                                     selectedOption = regionalSettingsSelect.querySelector('[selected]');
@@ -466,7 +487,7 @@ angular.module('ngSharePoint').factory('SPUtils',
 
                     return def.promise;
 
-                }   // getLCIDFromRegionalSettingsPage
+                } // getLCIDFromRegionalSettingsPage
 
 
 
@@ -503,79 +524,79 @@ angular.module('ngSharePoint').factory('SPUtils',
                     }
                 });
 
-/*
+                /*
 
-                $http.get(url).success(function(data) {
+                                $http.get(url).success(function(data) {
 
-                    var html = angular.element(data);
-                    var form, lcid;
+                                    var html = angular.element(data);
+                                    var form, lcid;
 
-                    angular.forEach(html, function(element) {
-                        if (element.tagName && element.tagName.toLowerCase() === 'form') {
-                            form = element;
-                        }
-                    });
+                                    angular.forEach(html, function(element) {
+                                        if (element.tagName && element.tagName.toLowerCase() === 'form') {
+                                            form = element;
+                                        }
+                                    });
 
-                    if (form !== void 0) {
+                                    if (form !== void 0) {
 
-                        if (form.querySelector('#ctl00_PlaceHolderMain_ctl08_ChkFollowWebRegionalSettings').checked) {
-                            // user inherits web settings
+                                        if (form.querySelector('#ctl00_PlaceHolderMain_ctl08_ChkFollowWebRegionalSettings').checked) {
+                                            // user inherits web settings
 
-                        } else {
+                                        } else {
 
-                            var regionalSettingsSelect = form.querySelector('#ctl00_PlaceHolderMain_ctl02_ctl01_DdlwebLCID');
-                            var selectedOption = regionalSettingsSelect.querySelector('[selected]');
-                            self.lcid = selectedOption.value;
+                                            var regionalSettingsSelect = form.querySelector('#ctl00_PlaceHolderMain_ctl02_ctl01_DdlwebLCID');
+                                            var selectedOption = regionalSettingsSelect.querySelector('[selected]');
+                                            self.lcid = selectedOption.value;
 
-                            angular.forEach(self.getCurrentUserLCIDPromises, function(promise) {
-                                promise.resolve(self.lcid);
-                            });
-                        }
+                                            angular.forEach(self.getCurrentUserLCIDPromises, function(promise) {
+                                                promise.resolve(self.lcid);
+                                            });
+                                        }
 
-                    }
+                                    }
 
-                    if (self.lcid === undefined) {
+                                    if (self.lcid === undefined) {
 
-                        // we will get the web sttings configuration
-                        url = _spPageContextInfo.webServerRelativeUrl.rtrim('/') + "/_layouts/15/regionalsetng.aspx";
-                        $http.get(url).success(function(data) {
+                                        // we will get the web sttings configuration
+                                        url = _spPageContextInfo.webServerRelativeUrl.rtrim('/') + "/_layouts/15/regionalsetng.aspx";
+                                        $http.get(url).success(function(data) {
 
-                            html = angular.element(data);
+                                            html = angular.element(data);
 
-                            angular.forEach(html, function(element) {
-                                if (element.tagName && element.tagName.toLowerCase() === 'form') {
-                                    form = element;
-                                }
-                            });
+                                            angular.forEach(html, function(element) {
+                                                if (element.tagName && element.tagName.toLowerCase() === 'form') {
+                                                    form = element;
+                                                }
+                                            });
 
-                            if (form !== void 0) {
+                                            if (form !== void 0) {
 
-                                regionalSettingsSelect = form.querySelector('#ctl00_PlaceHolderMain_ctl02_ctl01_DdlwebLCID');
-                                selectedOption = regionalSettingsSelect.querySelector('[selected]');
-                                self.lcid = selectedOption.value;
+                                                regionalSettingsSelect = form.querySelector('#ctl00_PlaceHolderMain_ctl02_ctl01_DdlwebLCID');
+                                                selectedOption = regionalSettingsSelect.querySelector('[selected]');
+                                                self.lcid = selectedOption.value;
 
-                                angular.forEach(self.getCurrentUserLCIDPromises, function(promise) {
-                                    promise.resolve(self.lcid);
+                                                angular.forEach(self.getCurrentUserLCIDPromises, function(promise) {
+                                                    promise.resolve(self.lcid);
+                                                });
+
+                                            } else {
+                                                // no language :-(
+                                                self.lcid = _spPageContextInfo.currentLanguage;
+                                                angular.forEach(self.getCurrentUserLCIDPromises, function(promise) {
+                                                    promise.resolve(self.lcid);
+                                                });
+                                            }
+
+                                        });
+                                    }
                                 });
 
-                            } else {
-                                // no language :-(
-                                self.lcid = _spPageContextInfo.currentLanguage;
-                                angular.forEach(self.getCurrentUserLCIDPromises, function(promise) {
-                                    promise.resolve(self.lcid);
-                                });
-                            }
-
-                        });
-                    }
-                });
-
-*/
+                */
 
 
                 return deferred.promise;
 
-            },  // getCurrentUserLCID
+            }, // getCurrentUserLCID
 
 
 
@@ -597,7 +618,10 @@ angular.module('ngSharePoint').factory('SPUtils',
 
                     }, function(sender, args) {
 
-                        deferred.reject({ sender: sender, args: args });
+                        deferred.reject({
+                            sender: sender,
+                            args: args
+                        });
                     });
                 });
 
@@ -640,8 +664,8 @@ angular.module('ngSharePoint').factory('SPUtils',
 
 
             /**
-            * This function calls the 'fn' function injecting the params (services)
-            */
+             * This function calls the 'fn' function injecting the params (services)
+             */
             callFunctionWithParams: function(fn, scope) {
 
                 var result = true;
@@ -658,4 +682,5 @@ angular.module('ngSharePoint').factory('SPUtils',
         };
 
     }
-]);
+
+})();

@@ -14,10 +14,16 @@
 //	SPFieldWorkflowStatus
 ///////////////////////////////////////
 
-angular.module('ngSharePoint').directive('spfieldWorkflowstatus', 
+;(function() {
 
-	['SPFieldDirective', 'SPUtils',
+	angular
+		.module('ngSharePoint')
+		.directive('spfieldWorkflowstatus', spfieldWorkflowstatus_DirectiveFactory);
 
+	spfieldWorkflowstatus_DirectiveFactory.$inject = ['SPFieldDirective', 'SPUtils'];
+
+
+	/* @ngInject */
 	function spfieldWorkflowstatus_DirectiveFactory(SPFieldDirective, SPUtils) {
 
 		var spfieldWorkflowstatus_DirectiveDefinitionObject = {
@@ -34,15 +40,15 @@ angular.module('ngSharePoint').directive('spfieldWorkflowstatus',
 			link: function($scope, $element, $attrs, controllers) {
 
 				var directive = {
-					
+
 					fieldTypeName: 'workflowstatus',
 					replaceAll: false,
 					displayTemplateUrl: 'templates/form-templates/spfield-workflowstatus-display.html',
 					editTemplateUrl: 'templates/form-templates/spfield-workflowstatus-display.html'
 
-//						$scope.choices = $scope.schema.Choices.results;
+					//$scope.choices = $scope.schema.Choices.results;
 				};
-				
+
 				SPFieldDirective.baseLinkFn.apply(directive, arguments);
 
 				$scope.getWorkflowStatusDisplayValue = function() {
@@ -62,4 +68,4 @@ angular.module('ngSharePoint').directive('spfieldWorkflowstatus',
 
 	} // Directive factory
 
-]);
+})();

@@ -14,17 +14,24 @@
 //  boolean
 ///////////////////////////////////////
 
-angular.module('ngSharePoint').filter('boolean', 
+;(function() {
 
-    [ 
+    angular
+        .module('ngSharePoint')
+        .filter('boolean', boolean_Filter);
 
+    boolean_Filter.$inject = [];
+
+
+    /* @ngInject */
     function boolean_Filter($) {
 
         return function(val) {
 
-        	return val ? STSHtmlEncode(Strings.STS.L_SPYes) : STSHtmlEncode(Strings.STS.L_SPNo);
+            return val ? STSHtmlEncode(Strings.STS.L_SPYes) : STSHtmlEncode(Strings.STS.L_SPNo);
 
         };
-        
+
     }
-]);
+
+})();

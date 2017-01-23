@@ -1,4 +1,3 @@
-
 /**
  * @ngdoc object
  * @name ngSharePoint.SPWeb
@@ -24,10 +23,13 @@
  * 
  */
 
+;(function() {
 
-angular.module('ngSharePoint').factory('SPWeb', 
+	angular
+		.module('ngSharePoint')
+		.factory('SPWeb', SPWeb_Factory);
 
-	['$q', 'SPHttp', 'SPUtils', 'SPList', 'SPUser', 'SPGroup', 'SPFolder',
+	SPWeb_Factory.$inject = ['$q', 'SPHttp', 'SPUtils', 'SPList', 'SPUser', 'SPGroup', 'SPFolder'];
 
 	function SPWeb_Factory($q, SPHttp, SPUtils, SPList, SPUser, SPGroup, SPFolder) {
 
@@ -174,8 +176,8 @@ angular.module('ngSharePoint').factory('SPWeb',
 		 *     web.getProperties({$expand: 'SiteGroups'}).then(function() {
 		 *       
 		 *        angular.forEach(web.SiteGroups.results, function(group) {
-	     *           
-	     *           console.log(group.Title + ' ' + group.Description);
+		 *           
+		 *           console.log(group.Title + ' ' + group.Description);
 		 *        });
 		 *     });
 		 *
@@ -192,7 +194,7 @@ angular.module('ngSharePoint').factory('SPWeb',
 				if (query) {
 					query.$expand = defaultExpandProperties + (query.$expand ? ',' + query.$expand : '');
 				} else {
-					query = { 
+					query = {
 						$expand: defaultExpandProperties
 					};
 				}
@@ -205,23 +207,23 @@ angular.module('ngSharePoint').factory('SPWeb',
 					angular.extend(self, data);
 
 					return data;
-						
+
 				});
 			});
 
 		}; // getProperties
 
 		/**
-	     * @ngdoc function
-	     * @name ngSharePoint.SPWeb#getListByRootFolderName
-	     * @methodOf ngSharePoint.SPWeb
-	     *
-	     * @description
-	     * Retrieves a SharePoint list or document library from the server and returns a single 
-	     * {@link ngSharePoint.SPList SPList} object.
-	     *
-	     * @returns {promise} promise with a single {@link ngSharePoint.SPList SPList} object.
-	     *
+		 * @ngdoc function
+		 * @name ngSharePoint.SPWeb#getListByRootFolderName
+		 * @methodOf ngSharePoint.SPWeb
+		 *
+		 * @description
+		 * Retrieves a SharePoint list or document library from the server and returns a single 
+		 * {@link ngSharePoint.SPList SPList} object.
+		 *
+		 * @returns {promise} promise with a single {@link ngSharePoint.SPList SPList} object.
+		 *
 		 * @example
 		 * <pre>
 		 *
@@ -229,55 +231,55 @@ angular.module('ngSharePoint').factory('SPWeb',
 		 *
 		 *     var web = webObject;
 		 *     web.getListByRootFolder('INTERNAL_LIST_NAME')
-         *      .then(function(list) {
+		 *      .then(function(list) {
 		 *          $scope.list = list;
-         *      }, function(reason) {
-         *          alert('Failed: ' + reason);
-         *      });
+		 *      }, function(reason) {
+		 *          alert('Failed: ' + reason);
+		 *      });
 		 *   });
 		 * </pre>
 		 */
-		SPWebObj.prototype.getListByRootFolderName = function (name) {
-		    var def = $q.defer();
-		    
-		    var self = this;
+		SPWebObj.prototype.getListByRootFolderName = function(name) {
+			var def = $q.defer();
 
-		    SPUtils.SharePointReady().then(function () {
+			var self = this;
 
-		        var url = self.apiUrl + '/Lists';
-		        SPHttp.get(url).then(function (data) {
-		            var promises = [];
-		            angular.forEach(data, function (listProperties) {
-		                var spList = new SPList(self, listProperties.Id, listProperties);
-		                var promise = spList.getRootFolder().then(function (folder) {
-		                    if (folder.Name === name) {
-		                        def.resolve(spList);
-		                    }
-		                });
-		                promises.push(promise);
-		            });
+			SPUtils.SharePointReady().then(function() {
 
-		            $q.all(promises).then(function (response) {
-                        // The deferred promises did not resolve, therefore the list was not found
-                        def.reject("A list with the rootFolderName = \"" + name + "\" was not found");
-                    });
-		        });
-		    });
+				var url = self.apiUrl + '/Lists';
+				SPHttp.get(url).then(function(data) {
+					var promises = [];
+					angular.forEach(data, function(listProperties) {
+						var spList = new SPList(self, listProperties.Id, listProperties);
+						var promise = spList.getRootFolder().then(function(folder) {
+							if (folder.Name === name) {
+								def.resolve(spList);
+							}
+						});
+						promises.push(promise);
+					});
 
-		    return def.promise;
+					$q.all(promises).then(function(response) {
+						// The deferred promises did not resolve, therefore the list was not found
+						def.reject("A list with the rootFolderName = \"" + name + "\" was not found");
+					});
+				});
+			});
+
+			return def.promise;
 		};
 
 		/**
-	     * @ngdoc function
-	     * @name ngSharePoint.SPWeb#getLists
-	     * @methodOf ngSharePoint.SPWeb
-	     *
-	     * @description
-	     * Retrieves all SharePoint lists and document libraries from the server and returns an
-	     * array of {@link ngSharePoint.SPList SPList} objects.
-	     *
-	     * @returns {promise} promise with an array of {@link ngSharePoint.SPList SPList} objects.
-	     *
+		 * @ngdoc function
+		 * @name ngSharePoint.SPWeb#getLists
+		 * @methodOf ngSharePoint.SPWeb
+		 *
+		 * @description
+		 * Retrieves all SharePoint lists and document libraries from the server and returns an
+		 * array of {@link ngSharePoint.SPList SPList} objects.
+		 *
+		 * @returns {promise} promise with an array of {@link ngSharePoint.SPList SPList} objects.
+		 *
 		 * @example
 		 * <pre>
 		 *
@@ -287,8 +289,8 @@ angular.module('ngSharePoint').factory('SPWeb',
 		 *     web.getLists().then(function(lists) {
 		 *       
 		 *        angular.forEach(lists, function(list) {
-	     *           
-	     *           console.log(list.Title + ' ' + list.EnableAttachments);
+		 *           
+		 *           console.log(list.Title + ' ' + list.EnableAttachments);
 		 *        });
 		 *     });
 		 *
@@ -322,19 +324,19 @@ angular.module('ngSharePoint').factory('SPWeb',
 
 
 		/**
-	     * @ngdoc function
-	     * @name ngSharePoint.SPWeb#getList
-	     * @methodOf ngSharePoint.SPWeb
-	     *
-	     * @description
-	     * Retrieves an instance of the specified SharePoint list or document library from the server
-	     *
-	     * @param {string|GUID} name The name or the GUID of the list
-	     *
-         * Also, you can specify "UserInfoList" to refer to the system list with all site users.
-         * 
-	     * @returns {promise} promise with an {@link ngSharePoint.SPList SPList} object
-	     *
+		 * @ngdoc function
+		 * @name ngSharePoint.SPWeb#getList
+		 * @methodOf ngSharePoint.SPWeb
+		 *
+		 * @description
+		 * Retrieves an instance of the specified SharePoint list or document library from the server
+		 *
+		 * @param {string|GUID} name The name or the GUID of the list
+		 *
+		 * Also, you can specify "UserInfoList" to refer to the system list with all site users.
+		 * 
+		 * @returns {promise} promise with an {@link ngSharePoint.SPList SPList} object
+		 *
 		 * @example
 		 * <pre>
 		 *
@@ -353,13 +355,13 @@ angular.module('ngSharePoint').factory('SPWeb',
 		 * <pre>
 		 *   
 		 *    web.getList('12fa20d2-1bb8-489c-bea3-b81797ddfeaf').then(function(list) {
-	     *        list.getProperties().then(function() {
+		 *        list.getProperties().then(function() {
 		 *		     alert(list.Title);
 		 *		  });
 		 *    });
 		 * </pre>
 		 *
-		*/
+		 */
 		SPWebObj.prototype.getList = function(listName) {
 
 			var def = $q.defer();
@@ -380,42 +382,42 @@ angular.module('ngSharePoint').factory('SPWeb',
 		 *
 		 * @returns {promise} promise with a {@link ngSharePoint.SPFolder SPFolder} object
 		 *
-		*/
+		 */
 		SPWebObj.prototype.getRootFolder = function() {
 
-            var self = this,
-            	rootFolder = this.RootFolder;
+			var self = this,
+				rootFolder = this.RootFolder;
 
-            if (rootFolder === void 0) {
+			if (rootFolder === void 0) {
 
-            	var url = self.apiUrl + '/RootFolder';
+				var url = self.apiUrl + '/RootFolder';
 
-            	rootFolder = SPHttp.get(url).then(function(data) {
+				rootFolder = SPHttp.get(url).then(function(data) {
 
-                    self.RootFolder = new SPFolder(self, data.ServerRelativeUrl, data);
-                    self.RootFolder.web = self;
+					self.RootFolder = new SPFolder(self, data.ServerRelativeUrl, data);
+					self.RootFolder.web = self;
 
-                    return self.RootFolder;
+					return self.RootFolder;
 
-            	});
-            }
+				});
+			}
 
-            return $q.when(rootFolder);
+			return $q.when(rootFolder);
 
 		};
 
 
 
 		/**
-	     * @ngdoc function
-	     * @name ngSharePoint.SPWeb#getCurrentUser
-	     * @methodOf ngSharePoint.SPWeb
-	     *
-	     * @description
-	     * Retrieves the current user from SharePoint
-	     *
-	     * @returns {promise} promise with an {@link ngSharePoint.SPUser SPUser} object
-	     *
+		 * @ngdoc function
+		 * @name ngSharePoint.SPWeb#getCurrentUser
+		 * @methodOf ngSharePoint.SPWeb
+		 *
+		 * @description
+		 * Retrieves the current user from SharePoint
+		 *
+		 * @returns {promise} promise with an {@link ngSharePoint.SPUser SPUser} object
+		 *
 		 * @example
 		 * <pre>
 		 *
@@ -427,7 +429,7 @@ angular.module('ngSharePoint').factory('SPWeb',
 		 *    }
 		 * });
 		 * </pre>
-		*/
+		 */
 		SPWebObj.prototype.getCurrentUser = function() {
 
 			var def = $q.defer();
@@ -473,16 +475,16 @@ angular.module('ngSharePoint').factory('SPWeb',
 
 
 		/**
-	     * @ngdoc function
-	     * @name ngSharePoint.SPWeb#getUserById
-	     * @methodOf ngSharePoint.SPWeb
-	     *
-	     * @description
-	     * Retrieves a specified user from SharePoint
-	     *
-	     * @param {int} userID User ID of the desired user to retrieve
-	     * @returns {promise} promise with a {@link ngSharePoint.SPUser SPUser} object
-	     *
+		 * @ngdoc function
+		 * @name ngSharePoint.SPWeb#getUserById
+		 * @methodOf ngSharePoint.SPWeb
+		 *
+		 * @description
+		 * Retrieves a specified user from SharePoint
+		 *
+		 * @param {int} userID User ID of the desired user to retrieve
+		 * @returns {promise} promise with a {@link ngSharePoint.SPUser SPUser} object
+		 *
 		 * @example
 		 * <pre>
 		 *
@@ -494,7 +496,7 @@ angular.module('ngSharePoint').factory('SPWeb',
 		 *    }
 		 * });
 		 * </pre>
-		*/
+		 */
 		SPWebObj.prototype.getUserById = function(userID) {
 
 			return new SPUser(this, userID).getProperties();
@@ -503,16 +505,16 @@ angular.module('ngSharePoint').factory('SPWeb',
 
 
 		/**
-	     * @ngdoc function
-	     * @name ngSharePoint.SPWeb#getSiteGroups
-	     * @methodOf ngSharePoint.SPWeb
-	     *
-	     * @description
-	     * Retrieves all SharePoint site groups for the current web and returns an
-	     * array of {@link ngSharePoint.SPGroup SPGroup} objects.
-	     *
-	     * @returns {promise} promise with an array of {@link ngSharePoint.SPGroup SPGroup} objects.
-	     *
+		 * @ngdoc function
+		 * @name ngSharePoint.SPWeb#getSiteGroups
+		 * @methodOf ngSharePoint.SPWeb
+		 *
+		 * @description
+		 * Retrieves all SharePoint site groups for the current web and returns an
+		 * array of {@link ngSharePoint.SPGroup SPGroup} objects.
+		 *
+		 * @returns {promise} promise with an array of {@link ngSharePoint.SPGroup SPGroup} objects.
+		 *
 		 * @example
 		 * <pre>
 		 *
@@ -522,8 +524,8 @@ angular.module('ngSharePoint').factory('SPWeb',
 		 *     web.getSiteGroups().then(function(groups) {
 		 *       
 		 *        angular.forEach(groups, function(group) {
-	     *           
-	     *           console.log(group.Title + ' ' + group.Description);
+		 *           
+		 *           console.log(group.Title + ' ' + group.Description);
 		 *        });
 		 *     });
 		 *
@@ -556,7 +558,7 @@ angular.module('ngSharePoint').factory('SPWeb',
 				});
 			}
 
-			return $q.when(siteGroups); 
+			return $q.when(siteGroups);
 
 
 		};
@@ -567,4 +569,5 @@ angular.module('ngSharePoint').factory('SPWeb',
 		return SPWebObj;
 
 	}
-]);
+
+})();

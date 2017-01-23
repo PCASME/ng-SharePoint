@@ -15,7 +15,7 @@
 //  Shows a item field (display mode)
 //////////////////////////////////////////////////
 
-(function() {
+;(function() {
 
     'use strict';
 

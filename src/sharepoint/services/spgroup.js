@@ -10,10 +10,13 @@
  *
  */
 
+;(function() {
 
-angular.module('ngSharePoint').factory('SPGroup', 
+	angular
+		.module('ngSharePoint')
+		.factory('SPGroup', SPGroup_Factory);
 
-	['$q', 'SPHttp', 'SPCache', 'SPObjectProvider', 
+	SPGroup_Factory.$inject = ['$q', 'SPHttp', 'SPCache', 'SPObjectProvider'];
 
 	function SPGroup_Factory($q, SPHttp, SPCache, SPObjectProvider) {
 
@@ -36,7 +39,7 @@ angular.module('ngSharePoint').factory('SPGroup',
 		 * 
 		 * @example
 		 * <pre>
-         *  // Previously initiated web service and injected SPGroup service ...
+		 *  // Previously initiated web service and injected SPGroup service ...
 		 *  var group = new SPGroup(web, 'Visitors');
 		 *
 		 *  // ... do something with the group object
@@ -82,27 +85,27 @@ angular.module('ngSharePoint').factory('SPGroup',
 
 
 
-        /**
-         * @ngdoc function
-         * @name ngSharePoint.SPGroup#getProperties
-         * @methodOf ngSharePoint.SPGroup
-         *
-         * @description
-         * Makes a call to the SharePoint server and collects all the group properties.
-         * The current object is extended with the recovered properties. This means that when this method is executed,
-         * any group property is accessible directly. ex: `group.Title`, `group.Description`, `group.CanCurrentUserEditMembership`, etc.
-         *
-         * For a complete list of group properties go to Microsoft
-         * SharePoint {@link https://msdn.microsoft.com/en-us/library/office/dn531432.aspx#bk_GroupProperties group api reference}
-         *
-         * @returns {promise} promise with an object with all group properties
-         *
-         */
+		/**
+		 * @ngdoc function
+		 * @name ngSharePoint.SPGroup#getProperties
+		 * @methodOf ngSharePoint.SPGroup
+		 *
+		 * @description
+		 * Makes a call to the SharePoint server and collects all the group properties.
+		 * The current object is extended with the recovered properties. This means that when this method is executed,
+		 * any group property is accessible directly. ex: `group.Title`, `group.Description`, `group.CanCurrentUserEditMembership`, etc.
+		 *
+		 * For a complete list of group properties go to Microsoft
+		 * SharePoint {@link https://msdn.microsoft.com/en-us/library/office/dn531432.aspx#bk_GroupProperties group api reference}
+		 *
+		 * @returns {promise} promise with an object with all group properties
+		 *
+		 */
 		SPGroupObj.prototype.getProperties = function() {
 
 			var self = this,
 				url = self.apiUrl;
-			
+
 			return SPHttp.get(url).then(function(data) {
 
 				utils.cleanDeferredProperties(data);
@@ -117,15 +120,15 @@ angular.module('ngSharePoint').factory('SPGroup',
 
 
 		/**
-	     * @ngdoc function
-	     * @name ngSharePoint.SPGroup#getOwner
-	     * @methodOf ngSharePoint.SPGroup
-	     *
-	     * @description
-	     * Retrieves the sharepoint owner of the group.
-	     *
-	     * @returns {promise} promise with an {@link ngSharePoint.SPUser SPUser} object  
-	     *
+		 * @ngdoc function
+		 * @name ngSharePoint.SPGroup#getOwner
+		 * @methodOf ngSharePoint.SPGroup
+		 *
+		 * @description
+		 * Retrieves the sharepoint owner of the group.
+		 *
+		 * @returns {promise} promise with an {@link ngSharePoint.SPUser SPUser} object  
+		 *
 		 * @example
 		 * <pre>
 		 *
@@ -134,7 +137,7 @@ angular.module('ngSharePoint').factory('SPGroup',
 		 *     var group = web.getGroup('Visitors');
 		 *     group.getOwner().then(function(owner) {
 		 *       
-	     *         console.log(owner.Name);
+		 *         console.log(owner.Name);
 		 *     });
 		 *
 		 *   });
@@ -144,7 +147,7 @@ angular.module('ngSharePoint').factory('SPGroup',
 
 			var self = this,
 				url = self.apiUrl + '/Owner';
-			
+
 			return SPHttp.get(url).then(function(data) {
 
 				utils.cleanDeferredProperties(data);
@@ -163,21 +166,20 @@ angular.module('ngSharePoint').factory('SPGroup',
 				return self;
 			});
 
-		};	// getOwner
-
+		}; // getOwner
 
 
 
 		/**
-	     * @ngdoc function
-	     * @name ngSharePoint.SPGroup#getUsers
-	     * @methodOf ngSharePoint.SPGroup
-	     *
-	     * @description
-	     * Gets a collection of {@link ngSharePoint.SPUser SPUser} objects that represents all of the users in the group.
-	     *
-	     * @returns {promise} promise with an array of {@link ngSharePoint.SPUser SPUser} objects  
-	     *
+		 * @ngdoc function
+		 * @name ngSharePoint.SPGroup#getUsers
+		 * @methodOf ngSharePoint.SPGroup
+		 *
+		 * @description
+		 * Gets a collection of {@link ngSharePoint.SPUser SPUser} objects that represents all of the users in the group.
+		 *
+		 * @returns {promise} promise with an array of {@link ngSharePoint.SPUser SPUser} objects  
+		 *
 		 * @example
 		 * <pre>
 		 *
@@ -187,7 +189,7 @@ angular.module('ngSharePoint').factory('SPGroup',
 		 *     group.getUsers().then(function(users) {
 		 *       
 		 *        angular.forEach(users, function(user) {
-	     *           console.log(user.Name);
+		 *           console.log(user.Name);
 		 *        });
 		 *     });
 		 *
@@ -215,14 +217,15 @@ angular.module('ngSharePoint').factory('SPGroup',
 				});
 			}
 
-            return $q.when(users);
+			return $q.when(users);
 
 		}; // getUsers
 
 
 
- 		// Returns the SPGroupObj class
+		// Returns the SPGroupObj class
 		return SPGroupObj;
 
 	}
-]);
+
+})();

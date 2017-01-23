@@ -14,10 +14,16 @@
 //	SPFieldCalculated
 ///////////////////////////////////////
 
-angular.module('ngSharePoint').directive('spfieldCalculated', 
+;(function() {
 
-	['SPFieldDirective', 'SPUtils',
+	angular
+		.module('ngSharePoint')
+		.directive('spfieldCalculated', spfieldCalculated_DirectiveFactory);
 
+	spfieldCalculated_DirectiveFactory.$inject = ['SPFieldDirective', 'SPUtils'];
+
+
+    /* @ngInject */
 	function spfieldCalculated_DirectiveFactory(SPFieldDirective, SPUtils) {
 
 		var spfieldCalculated_DirectiveDefinitionObject = {
@@ -53,54 +59,54 @@ angular.module('ngSharePoint').directive('spfieldCalculated',
 
 
 				var directive = {
-					
+
 					fieldTypeName: 'text',
 					replaceAll: false,
 
 					init: function() {
 
-						 switch($scope.schema.OutputType) {
+						switch ($scope.schema.OutputType) {
 
-						 	case SP.FieldType.text:
-						 		// Change directive type
-						 		directive.fieldTypeName = 'text';
-						 		break;
-
-
-						 	case SP.FieldType.dateTime:
-						 		// Change directive type
-						 		directive.fieldTypeName = 'datetime';
-
-						 		// Specific type initialization
-						 		$scope.cultureInfo = (typeof __cultureInfo == 'undefined' ? Sys.CultureInfo.CurrentCulture : __cultureInfo);
-						 		break;
+							case SP.FieldType.text:
+								// Change directive type
+								directive.fieldTypeName = 'text';
+								break;
 
 
-						 	case SP.FieldType.boolean:
-						 		// Change directive type
-						 		directive.fieldTypeName = 'boolean';
-						 		break;
+							case SP.FieldType.dateTime:
+								// Change directive type
+								directive.fieldTypeName = 'datetime';
+
+								// Specific type initialization
+								$scope.cultureInfo = (typeof __cultureInfo == 'undefined' ? Sys.CultureInfo.CurrentCulture : __cultureInfo);
+								break;
 
 
-						 	case SP.FieldType.number:
-						 		// Change directive type
-						 		directive.fieldTypeName = 'number';
+							case SP.FieldType.boolean:
+								// Change directive type
+								directive.fieldTypeName = 'boolean';
+								break;
 
-						 		// Specific type initialization
+
+							case SP.FieldType.number:
+								// Change directive type
+								directive.fieldTypeName = 'number';
+
+								// Specific type initialization
 								var xml = SPUtils.parseXmlString($scope.schema.SchemaXml);
 								var percentage = xml.documentElement.getAttribute('Percentage') || 'false';
 								var decimals = xml.documentElement.getAttribute('Decimals') || 'auto';
 								$scope.schema.Percentage = percentage.toLowerCase() === 'true';
 								$scope.schema.Decimals = parseInt(decimals);
 								$scope.cultureInfo = (typeof __cultureInfo == 'undefined' ? Sys.CultureInfo.CurrentCulture : __cultureInfo);
-						 		break;
+								break;
 
 
-						 	case SP.FieldType.currency:
-						 		// Change directive type
-						 		directive.fieldTypeName = 'currency';
+							case SP.FieldType.currency:
+								// Change directive type
+								directive.fieldTypeName = 'currency';
 
-						 		// Specific type initialization
+								// Specific type initialization
 								$scope.currencyLocaleId = $scope.schema.CurrencyLocaleId;
 								// TODO: Get the CultureInfo object based on the field schema 'CurrencyLocaleId' property.
 								$scope.cultureInfo = (typeof __cultureInfo == 'undefined' ? Sys.CultureInfo.CurrentCulture : __cultureInfo);
@@ -108,23 +114,23 @@ angular.module('ngSharePoint').directive('spfieldCalculated',
 								// TODO: Currency could also have the 'Decimal' value in the 'SchemaXml' property.
 								//		 (See SPFieldNumber)
 
-						 		break;
+								break;
 
-						 }
+						}
 
 					},
 
 					watchValueFn: function(newValue) {
-						
-						switch($scope.schema.OutputType) {
 
-						 	case SP.FieldType.text:
-						 		break;
+						switch ($scope.schema.OutputType) {
+
+							case SP.FieldType.text:
+								break;
 
 
-						 	case SP.FieldType.dateTime:
+							case SP.FieldType.dateTime:
 								if ($scope.value !== null && $scope.value !== void 0) {
-									
+
 									$scope.dateModel = new Date($scope.value);
 
 								} else {
@@ -132,24 +138,24 @@ angular.module('ngSharePoint').directive('spfieldCalculated',
 									$scope.dateModel = null;
 
 								}
-					 			break;
+								break;
 
 
-						 	case SP.FieldType.boolean:
+							case SP.FieldType.boolean:
 								$scope.displayValue = newValue ? STSHtmlEncode(Strings.STS.L_SPYes) : STSHtmlEncode(Strings.STS.L_SPNo);
-						 		break;
+								break;
 
 
-						 	case SP.FieldType.number:
-						 		// Parse the value to match the type.
-						 		$scope.value = parseFloat(newValue);
-						 		break;
+							case SP.FieldType.number:
+								// Parse the value to match the type.
+								$scope.value = parseFloat(newValue);
+								break;
 
 
-						 	case SP.FieldType.currency:
-						 		// Parse the value to match the type.
-						 		$scope.value = parseFloat(newValue);
-						 		break;
+							case SP.FieldType.currency:
+								// Parse the value to match the type.
+								$scope.value = parseFloat(newValue);
+								break;
 
 						}
 
@@ -167,7 +173,7 @@ angular.module('ngSharePoint').directive('spfieldCalculated',
 					}
 
 				};
-				
+
 
 				SPFieldDirective.baseLinkFn.apply(directive, arguments);
 
@@ -180,4 +186,4 @@ angular.module('ngSharePoint').directive('spfieldCalculated',
 
 	} // Directive factory
 
-]);
+})();

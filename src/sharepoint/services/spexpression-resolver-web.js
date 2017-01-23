@@ -7,77 +7,80 @@
  * 
  */
 
-angular.module('ngSharePoint').factory('SPExpressionResolverweb', 
+;(function () {
 
-    [
+    angular.module('ngSharePoint').factory('SPExpressionResolverweb', 
 
-    function SPExpressionResolverWeb_Factory() {
+        [
 
-        'use strict';
+        function SPExpressionResolverWeb_Factory() {
 
-        var PARTS_REGEXP = /[\[./]([\w )]+)/g;
+            'use strict';
 
-        function getExpressionParts(text) {
+            var PARTS_REGEXP = /[\[./]([\w )]+)/g;
 
-            var matches = [];
-            var match;
+            function getExpressionParts(text) {
 
-            while ((match = PARTS_REGEXP.exec(text))) {
+                var matches = [];
+                var match;
 
-                match.shift();
-                matches.push(match.join(''));
-            }
+                while ((match = PARTS_REGEXP.exec(text))) {
 
-            return matches;
-        }
-
-        function createExpressionValue(scope, name, value) {
-
-            if (scope.expressions !== void 0) {
-
-                var extendedExpression = {
-                    web: {
-                    }
-                };
-                if (angular.isArray(name)) {
-
-                    var valueObject = value;
-
-                    for(var r = name.length - 1; r > 0; r--) {
-
-                        var childValue = valueObject;
-                        valueObject = {};
-                        valueObject[name[r]] = childValue;
-
-                    }
-
-                    extendedExpression.web[name[0]] = valueObject;
-
-                } else {
-                    extendedExpression.web[name] = value;
+                    match.shift();
+                    matches.push(match.join(''));
                 }
 
-                scope.expressions = utils.deepExtend(extendedExpression, scope.expressions);
+                return matches;
             }
+
+            function createExpressionValue(scope, name, value) {
+
+                if (scope.expressions !== void 0) {
+
+                    var extendedExpression = {
+                        web: {
+                        }
+                    };
+                    if (angular.isArray(name)) {
+
+                        var valueObject = value;
+
+                        for(var r = name.length - 1; r > 0; r--) {
+
+                            var childValue = valueObject;
+                            valueObject = {};
+                            valueObject[name[r]] = childValue;
+
+                        }
+
+                        extendedExpression.web[name[0]] = valueObject;
+
+                    } else {
+                        extendedExpression.web[name] = value;
+                    }
+
+                    scope.expressions = utils.deepExtend(extendedExpression, scope.expressions);
+                }
+
+            }
+
+            return {
+
+                resolve: function(expression, scope) {
+
+                    var queryParts = getExpressionParts(expression);
+
+                    return scope.item.list.web.getProperties().then(function(properties) {
+
+                        var value = properties[queryParts[0]];
+                        createExpressionValue(scope, queryParts[0], value);
+                        return 'expressions.web.' + queryParts[0];
+                    });
+                }
+
+            };
 
         }
+    ]);
 
-        return {
-
-            resolve: function(expression, scope) {
-
-                var queryParts = getExpressionParts(expression);
-
-                return scope.item.list.web.getProperties().then(function(properties) {
-
-                    var value = properties[queryParts[0]];
-                    createExpressionValue(scope, queryParts[0], value);
-                    return 'expressions.web.' + queryParts[0];
-                });
-            }
-
-        };
-
-    }
-]);
-
+})();

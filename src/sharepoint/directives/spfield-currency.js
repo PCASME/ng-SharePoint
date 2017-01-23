@@ -14,10 +14,16 @@
 //	SPFieldCurrency
 ///////////////////////////////////////
 
-angular.module('ngSharePoint').directive('spfieldCurrency',
+;(function() {
 
-	['SPFieldDirective',
+	angular
+		.module('ngSharePoint')
+		.directive('spfieldCurrency', spfieldCurrency_DirectiveFactory);
 
+	spfieldCurrency_DirectiveFactory.$inject = ['SPFieldDirective'];
+
+
+    /* @ngInject */
 	function spfieldCurrency_DirectiveFactory(SPFieldDirective) {
 
 		var spfieldCurrency_DirectiveDefinitionObject = {
@@ -34,57 +40,57 @@ angular.module('ngSharePoint').directive('spfieldCurrency',
 			link: function($scope, $element, $attrs, controllers) {
 
 
-				var directive = {
+					var directive = {
 
-					fieldTypeName: 'currency',
-					replaceAll: false,
+						fieldTypeName: 'currency',
+						replaceAll: false,
 
-					init: function() {
+						init: function() {
 
-						$scope.currencyLocaleId = $scope.schema.CurrencyLocaleId;
-						// TODO: Get the CultureInfo object based on the field schema 'CurrencyLocaleId' property.
-						$scope.cultureInfo = (typeof __cultureInfo == 'undefined' ? Sys.CultureInfo.CurrentCulture : __cultureInfo);
+							$scope.currencyLocaleId = $scope.schema.CurrencyLocaleId;
+							// TODO: Get the CultureInfo object based on the field schema 'CurrencyLocaleId' property.
+							$scope.cultureInfo = (typeof __cultureInfo == 'undefined' ? Sys.CultureInfo.CurrentCulture : __cultureInfo);
 
-						// TODO: Currency could also have the 'Decimal' value in the 'SchemaXml' property.
-						//		 (See SPFieldNumber)
+							// TODO: Currency could also have the 'Decimal' value in the 'SchemaXml' property.
+							//		 (See SPFieldNumber)
 
-					},
+						},
 
-					formatterFn: function(modelValue) {
+						formatterFn: function(modelValue) {
 
-                        if (typeof modelValue === 'string') {
-                            modelValue = parseFloat(modelValue);
-							if (isNaN(modelValue)) modelValue = undefined;
-                        }
+							if (typeof modelValue === 'string') {
+								modelValue = parseFloat(modelValue);
+								if (isNaN(modelValue)) modelValue = undefined;
+							}
 
-						$scope.formCtrl.fieldValueChanged($scope.schema.InternalName, modelValue, $scope.lastValue);
-						$scope.lastValue = modelValue;
+							$scope.formCtrl.fieldValueChanged($scope.schema.InternalName, modelValue, $scope.lastValue);
+							$scope.lastValue = modelValue;
 
-                        return modelValue;
-                    },
+							return modelValue;
+						},
 
-					parserFn: function(viewValue) {
+						parserFn: function(viewValue) {
 
-						if ($scope.lastValue !== parseFloat(viewValue)) {
-							// Calls the 'fieldValueChanged' method in the SPForm controller to broadcast to all child elements.
-							$scope.formCtrl.fieldValueChanged($scope.schema.InternalName, parseFloat(viewValue), $scope.lastValue);
-							$scope.lastValue = parseFloat(viewValue);
+							if ($scope.lastValue !== parseFloat(viewValue)) {
+								// Calls the 'fieldValueChanged' method in the SPForm controller to broadcast to all child elements.
+								$scope.formCtrl.fieldValueChanged($scope.schema.InternalName, parseFloat(viewValue), $scope.lastValue);
+								$scope.lastValue = parseFloat(viewValue);
+							}
+
+							return parseFloat(viewValue);
 						}
 
-						return parseFloat(viewValue);
-                    }
-
-				};
+					};
 
 
-				SPFieldDirective.baseLinkFn.apply(directive, arguments);
+					SPFieldDirective.baseLinkFn.apply(directive, arguments);
 
-	            $scope.modelCtrl.$validators.number = function(modelValue, viewValue) {
+					$scope.modelCtrl.$validators.number = function(modelValue, viewValue) {
 
-	            	return (viewValue === undefined) || (!isNaN(viewValue) && isFinite(viewValue));
-	            };
+						return (viewValue === undefined) || (!isNaN(viewValue) && isFinite(viewValue));
+					};
 
-			} // link
+				} // link
 
 		}; // Directive definition object
 
@@ -93,4 +99,4 @@ angular.module('ngSharePoint').directive('spfieldCurrency',
 
 	} // Directive factory
 
-]);
+})();

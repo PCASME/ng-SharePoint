@@ -14,10 +14,16 @@
 //	SPFieldAttachments
 ///////////////////////////////////////
 
-angular.module('ngSharePoint').directive('spfieldAttachments',
+;(function() {
 
-	['SPFieldDirective',
+	angular
+		.module('ngSharePoint')
+		.directive('spfieldAttachments', spfieldAttachments_DirectiveFactory);
 
+	spfieldAttachments_DirectiveFactory.$inject = ['SPFieldDirective'];
+
+
+    /* @ngInject */
 	function spfieldAttachments_DirectiveFactory(SPFieldDirective) {
 
 		var spfieldAttachments_DirectiveDefinitionObject = {
@@ -34,129 +40,132 @@ angular.module('ngSharePoint').directive('spfieldAttachments',
 			link: function($scope, $element, $attrs, controllers) {
 
 
-				var directive = {
+					var directive = {
 
-					fieldTypeName: 'attachments',
-					replaceAll: false,
+						fieldTypeName: 'attachments',
+						replaceAll: false,
 
-					init: function() {
+						init: function() {
 
-						$scope.DeleteAttachmentText = STSHtmlEncode(Strings.STS.L_DeleteDocItem_Text);
-						$scope.AttachFileText = Resources.core.cui_ButAttachFile;
-						$scope.LanguageID = _spPageContextInfo.currentLanguage.toString();
+							$scope.DeleteAttachmentText = STSHtmlEncode(Strings.STS.L_DeleteDocItem_Text);
+							$scope.AttachFileText = Resources.core.cui_ButAttachFile;
+							$scope.LanguageID = _spPageContextInfo.currentLanguage.toString();
 
-					},
+						},
 
-					renderFn: function(newValue, oldValue) {
+						renderFn: function(newValue, oldValue) {
 
-						// Check if the old and new values really differ.
-						if (newValue === null && oldValue === undefined) return;
-
-
-
-						// Show loading animation.
-						directive.setElementHTML('<div><img src="/_layouts/15/images/loadingcirclests16.gif" alt="" /></div>');
-
-						// Gets the files attached to the item
-						$scope.$parent.item.getAttachments().then(function(attachmentFiles){
-
-							$scope.attachmentFiles = attachmentFiles;
-							directive.renderField();
-
-						}, function(err) {
-
-							$scope.errorMsg = err.message;
-							directive.setElementHTML('<span style="color: brown">{{errorMsg}}</span>');
-						});
-					}
-				};
+							// Check if the old and new values really differ.
+							if (newValue === null && oldValue === undefined) return;
 
 
-				SPFieldDirective.baseLinkFn.apply(directive, arguments);
 
-				$scope.target = $scope.schema.Target || '_self';
+							// Show loading animation.
+							directive.setElementHTML('<div><img src="/_layouts/15/images/loadingcirclests16.gif" alt="" /></div>');
 
-				// ****************************************************************************
-				// Add new attachment to the item locally.
-				// NOTE: Attachments will be effective when save the item.
-				//
-				$scope.onFileSelect = function($files, $event) {
+							// Gets the files attached to the item
+							$scope.$parent.item.getAttachments().then(function(attachmentFiles) {
 
-					angular.forEach($files, function(file) {
+								$scope.attachmentFiles = attachmentFiles;
+								directive.renderField();
 
-						// Checks if filename has already been selected
-						var itemIndex = -1;
+							}, function(err) {
 
-						for (var i = 0; i < $scope.attachmentFiles.length; i++) {
-							if ($scope.attachmentFiles[i].FileName == file.name) {
-								itemIndex = i;
-								break;
-							}
+								$scope.errorMsg = err.message;
+								directive.setElementHTML('<span style="color: brown">{{errorMsg}}</span>');
+							});
 						}
+					};
 
 
-						if (itemIndex >= 0) {
+					SPFieldDirective.baseLinkFn.apply(directive, arguments);
 
-							alert(Strings.STS.L_ConflictReplaceTitle + ' \'' + file.name + '\'.');
+					$scope.target = $scope.schema.Target || '_self';
+
+					// ****************************************************************************
+					// Add new attachment to the item locally.
+					// NOTE: Attachments will be effective when save the item.
+					//
+					$scope.onFileSelect = function($files, $event) {
+
+						angular.forEach($files, function(file) {
+
+							// Checks if filename has already been selected
+							var itemIndex = -1;
+
+							for (var i = 0; i < $scope.attachmentFiles.length; i++) {
+								if ($scope.attachmentFiles[i].FileName == file.name) {
+									itemIndex = i;
+									break;
+								}
+							}
+
+
+							if (itemIndex >= 0) {
+
+								alert(Strings.STS.L_ConflictReplaceTitle + ' \'' + file.name + '\'.');
+
+							} else {
+
+								$scope.$parent.item.attachments.add.push(file);
+								$scope.attachmentFiles.push({
+									FileName: file.name,
+									local: true
+								});
+
+							}
+
+						});
+
+						// Initialize the 'files' property in the <input type="file" /> object.
+						$event.target.value = '';
+
+					};
+
+
+
+					// ****************************************************************************
+					// Removes existing attachment, local or server side.
+					// NOTE: Attachments will be effective when save the item.
+					//
+					$scope.removeAttachment = function($event, index, local) {
+
+						$event.preventDefault();
+
+						if (local) {
+
+							for (var i = 0; i < $scope.$parent.item.attachments.add.length; i++) {
+								if ($scope.$parent.item.attachments.add[i].name == $scope.attachmentFiles[index].FileName) {
+									$scope.$parent.item.attachments.add.splice(i, 1);
+									break;
+								}
+							}
+
+							$scope.attachmentFiles.splice(index, 1);
 
 						} else {
 
-							$scope.$parent.item.attachments.add.push(file);
-							$scope.attachmentFiles.push({ FileName: file.name, local: true });
+							var confirmMessage = Strings.STS.L_ConfirmDelete_TXT;
 
-						}
+							if (!!recycleBinEnabled) {
+								confirmMessage = Strings.STS.L_ConfirmRecycle_TXT;
+							}
 
-					});
+							if (confirm(confirmMessage)) {
 
-					// Initialize the 'files' property in the <input type="file" /> object.
-					$event.target.value = '';
-
-				};
-
-
-
-				// ****************************************************************************
-				// Removes existing attachment, local or server side.
-				// NOTE: Attachments will be effective when save the item.
-				//
-				$scope.removeAttachment = function($event, index, local) {
-
-					$event.preventDefault();
-
-					if (local) {
-
-						for (var i = 0; i < $scope.$parent.item.attachments.add.length; i++) {
-							if ($scope.$parent.item.attachments.add[i].name == $scope.attachmentFiles[index].FileName) {
-								$scope.$parent.item.attachments.add.splice(i, 1);
-								break;
+								$scope.$parent.item.attachments.remove.push($scope.attachmentFiles[index].FileName);
+								$scope.attachmentFiles.splice(index, 1);
 							}
 						}
 
-						$scope.attachmentFiles.splice(index, 1);
 
-					} else {
+						return false;
 
-						var confirmMessage = Strings.STS.L_ConfirmDelete_TXT;
-
-						if (!!recycleBinEnabled) {
-							confirmMessage = Strings.STS.L_ConfirmRecycle_TXT;
-						}
-
-						if (confirm(confirmMessage)) {
-
-							$scope.$parent.item.attachments.remove.push($scope.attachmentFiles[index].FileName);
-							$scope.attachmentFiles.splice(index, 1);
-						}
-					}
-
-
-					return false;
-
-				};
+					};
 
 
 
-			} // link
+				} // link
 
 		}; // Directive definition object
 
@@ -165,14 +174,13 @@ angular.module('ngSharePoint').directive('spfieldAttachments',
 
 	} // Directive factory
 
-]);
 
 
+	angular
+		.module('ngSharePoint')
+		.directive('fileSelect', fileSelect_DirectiveFactory);
 
-
-angular.module('ngSharePoint').directive('fileSelect',
-
-	['$parse', '$timeout', 'SPRibbon',
+	fileSelect_DirectiveFactory.$inject = ['$parse', '$timeout', 'SPRibbon'];
 
 	function fileSelect_DirectiveFactory($parse, $timeout, SPRibbon) {
 
@@ -245,8 +253,8 @@ angular.module('ngSharePoint').directive('fileSelect',
 
 				$timeout(function() {
 					fn($scope, {
-						$files : files,
-						$event : evt
+						$files: files,
+						$event: evt
 					});
 				});
 
@@ -254,16 +262,16 @@ angular.module('ngSharePoint').directive('fileSelect',
 
 
 
-            SPRibbon.ready().then(function() {
+			SPRibbon.ready().then(function() {
 
-            	SPRibbon.attachFileElement = $element;
-                SPRibbon.registerCommand(
-                	'Ribbon.ListForm.Edit.Actions.AttachFile',
-                	function() {
-                		SPRibbon.attachFileElement.click();
-                	}, true);
+				SPRibbon.attachFileElement = $element;
+				SPRibbon.registerCommand(
+					'Ribbon.ListForm.Edit.Actions.AttachFile',
+					function() {
+						SPRibbon.attachFileElement.click();
+					}, true);
 
-            });
+			});
 
 
 		}; // Directive definition object/function
@@ -273,4 +281,4 @@ angular.module('ngSharePoint').directive('fileSelect',
 
 	} // Directive factory
 
-]);
+})();

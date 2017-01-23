@@ -10,10 +10,13 @@
  *
  */
 
+;(function() {
 
-angular.module('ngSharePoint').factory('SPContentType', 
+    angular
+        .module('ngSharePoint')
+        .factory('SPContentType', SPContentType_Factory);
 
-    ['$q', 'SPCache', 'SPFolder', 'SPListItem', 
+    SPContentType_Factory.$inject = ['$q', 'SPCache', 'SPFolder', 'SPListItem', ];
 
     function SPContentType_Factory($q, SPCache, SPFolder, SPListItem) {
 
@@ -95,7 +98,6 @@ angular.module('ngSharePoint').factory('SPContentType',
                 angular.extend(this, contentTypeProperties);
             }
         };
-
 
 
 
@@ -191,7 +193,7 @@ angular.module('ngSharePoint').factory('SPContentType',
                         SPCache.setCacheValue('SPContentTypeFieldsCache', self.apiUrl, fields);
 
                         def.resolve(fields);
-                        
+
                     },
 
                     error: function(data, errorCode, errorMessage) {
@@ -206,16 +208,16 @@ angular.module('ngSharePoint').factory('SPContentType',
                     }
                 });
             }
-            
+
             return def.promise;
 
         }; // getFields
 
 
         /**
-        * Modify the ´jsLinkUrl` property of the content type.
-        * *Internal use*
-        */
+         * Modify the ´jsLinkUrl` property of the content type.
+         * *Internal use*
+         */
         SPContentTypeObj.prototype.setJSLink = function(jsLinkUrl) {
 
             var self = this;
@@ -241,7 +243,7 @@ angular.module('ngSharePoint').factory('SPContentType',
 
                 ctx = new SP.ClientContext(url);
             }
-            
+
             var web = ctx.get_web();
             var list = web.get_lists().getByTitle(self.__parent.Title);
             var contentTypes = list.get_contentTypes();
@@ -256,7 +258,10 @@ angular.module('ngSharePoint').factory('SPContentType',
 
             }, function(sender, args) {
 
-                deferred.reject({ sender: sender, args: args });
+                deferred.reject({
+                    sender: sender,
+                    args: args
+                });
 
             });
 
@@ -268,9 +273,9 @@ angular.module('ngSharePoint').factory('SPContentType',
 
 
         /**
-        * Retrieves the ´jsLinkUrl` property of the content type.
-        * *Internal use*
-        */
+         * Retrieves the ´jsLinkUrl` property of the content type.
+         * *Internal use*
+         */
         SPContentTypeObj.prototype.getJSLink = function() {
 
             var self = this;
@@ -281,7 +286,7 @@ angular.module('ngSharePoint').factory('SPContentType',
 
                 url: self.apiUrl + "/jsLink",
                 method: "GET",
-                headers: { 
+                headers: {
                     "Accept": "application/json; odata=verbose"
                 },
 
@@ -291,7 +296,7 @@ angular.module('ngSharePoint').factory('SPContentType',
 
                     def.resolve(d);
 
-                }, 
+                },
 
                 error: function(data, errorCode, errorMessage) {
 
@@ -318,4 +323,5 @@ angular.module('ngSharePoint').factory('SPContentType',
         return SPContentTypeObj;
 
     }
-]);
+
+})();

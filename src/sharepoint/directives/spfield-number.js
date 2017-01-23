@@ -15,10 +15,16 @@
 //	SPFieldNumber
 ///////////////////////////////////////
 
-angular.module('ngSharePoint').directive('spfieldNumber',
+;(function() {
 
-	['SPFieldDirective', 'SPUtils',
+	angular
+		.module('ngSharePoint')
+		.directive('spfieldNumber', spfieldNumber_DirectiveFactory);
 
+	spfieldNumber_DirectiveFactory.$inject = ['SPFieldDirective', 'SPUtils'];
+
+
+    /* @ngInject */
 	function spfieldNumber_DirectiveFactory(SPFieldDirective, SPUtils) {
 
 		var spfieldNumber_DirectiveDefinitionObject = {
@@ -35,55 +41,55 @@ angular.module('ngSharePoint').directive('spfieldNumber',
 			link: function($scope, $element, $attrs, controllers) {
 
 
-				var directive = {
+					var directive = {
 
-					fieldTypeName: 'number',
-					replaceAll: false,
+						fieldTypeName: 'number',
+						replaceAll: false,
 
-					init: function() {
+						init: function() {
 
-						var xml = SPUtils.parseXmlString($scope.schema.SchemaXml);
-						var percentage = xml.documentElement.getAttribute('Percentage') || $scope.schema.Percentage || 'false';
-						var decimals = xml.documentElement.getAttribute('Decimals') || $scope.schema.Decimals || 'auto';
-						$scope.schema.Percentage = percentage.toLowerCase() === 'true';
-						$scope.schema.Decimals = parseInt(decimals);
-						$scope.cultureInfo = (typeof __cultureInfo == 'undefined' ? Sys.CultureInfo.CurrentCulture : __cultureInfo);
-					},
+							var xml = SPUtils.parseXmlString($scope.schema.SchemaXml);
+							var percentage = xml.documentElement.getAttribute('Percentage') || $scope.schema.Percentage || 'false';
+							var decimals = xml.documentElement.getAttribute('Decimals') || $scope.schema.Decimals || 'auto';
+							$scope.schema.Percentage = percentage.toLowerCase() === 'true';
+							$scope.schema.Decimals = parseInt(decimals);
+							$scope.cultureInfo = (typeof __cultureInfo == 'undefined' ? Sys.CultureInfo.CurrentCulture : __cultureInfo);
+						},
 
-					formatterFn: function(modelValue) {
+						formatterFn: function(modelValue) {
 
-                        if (typeof modelValue === 'string') {
-                            modelValue = parseFloat(modelValue);
-							if (isNaN(modelValue)) modelValue = undefined;
-                        }
+							if (typeof modelValue === 'string') {
+								modelValue = parseFloat(modelValue);
+								if (isNaN(modelValue)) modelValue = undefined;
+							}
 
-						$scope.formCtrl.fieldValueChanged($scope.schema.InternalName, modelValue, $scope.lastValue);
-						$scope.lastValue = modelValue;
+							$scope.formCtrl.fieldValueChanged($scope.schema.InternalName, modelValue, $scope.lastValue);
+							$scope.lastValue = modelValue;
 
-                        return modelValue;
-                    },
+							return modelValue;
+						},
 
-					parserFn: function(viewValue) {
+						parserFn: function(viewValue) {
 
-						if ($scope.lastValue !== parseFloat(viewValue)) {
-							// Calls the 'fieldValueChanged' method in the SPForm controller to broadcast to all child elements.
-							$scope.formCtrl.fieldValueChanged($scope.schema.InternalName, parseFloat(viewValue), $scope.lastValue);
-							$scope.lastValue = parseFloat(viewValue);
+							if ($scope.lastValue !== parseFloat(viewValue)) {
+								// Calls the 'fieldValueChanged' method in the SPForm controller to broadcast to all child elements.
+								$scope.formCtrl.fieldValueChanged($scope.schema.InternalName, parseFloat(viewValue), $scope.lastValue);
+								$scope.lastValue = parseFloat(viewValue);
+							}
+
+							return parseFloat(viewValue);
 						}
-
-						return parseFloat(viewValue);
-                    }
-				};
+					};
 
 
-				SPFieldDirective.baseLinkFn.apply(directive, arguments);
+					SPFieldDirective.baseLinkFn.apply(directive, arguments);
 
-	            $scope.modelCtrl.$validators.number = function(modelValue, viewValue) {
+					$scope.modelCtrl.$validators.number = function(modelValue, viewValue) {
 
-	            	return (viewValue === undefined) || (!isNaN(viewValue) && isFinite(viewValue));
-	            };
+						return (viewValue === undefined) || (!isNaN(viewValue) && isFinite(viewValue));
+					};
 
-			} // link
+				} // link
 
 		}; // Directive definition object
 
@@ -92,19 +98,17 @@ angular.module('ngSharePoint').directive('spfieldNumber',
 
 	} // Directive factory
 
-]);
 
 
+	///////////////////////////////////////
+	//	SPNumber
+	///////////////////////////////////////
 
+	angular
+		.module('ngSharePoint')
+		.directive('spPercentage', spPercentage_DirectiveFactory);
 
-
-///////////////////////////////////////
-//	SPNumber
-///////////////////////////////////////
-
-angular.module('ngSharePoint').directive('spPercentage',
-
-	[
+	spPercentage_DirectiveFactory.$inject = [];
 
 	function spPercentage_DirectiveFactory() {
 
@@ -115,30 +119,30 @@ angular.module('ngSharePoint').directive('spPercentage',
 
 			link: function($scope, $element, $attrs, ngModel) {
 
-				ngModel.$formatters.push(function(value) {
-					if ($scope.schema.Percentage && value !== void 0) {
-						// If decimals is set to 'Auto', use 2 decimals for percentage values.
-						var decimals = isNaN($scope.schema.Decimals) ? 2 : $scope.schema.Decimals;
-						return (value * 100).toFixed(decimals);
-					} else {
-						return value;
-					}
-				});
+					ngModel.$formatters.push(function(value) {
+						if ($scope.schema.Percentage && value !== void 0) {
+							// If decimals is set to 'Auto', use 2 decimals for percentage values.
+							var decimals = isNaN($scope.schema.Decimals) ? 2 : $scope.schema.Decimals;
+							return (value * 100).toFixed(decimals);
+						} else {
+							return value;
+						}
+					});
 
 
-				ngModel.$parsers.push(function(value) {
-					if ($scope.schema.Percentage && value !== void 0) {
-						// If decimals is set to 'Auto', use 2 decimals for percentage values.
-						//var decimals = isNaN($scope.schema.Decimals) ? 2 : $scope.schema.Decimals;
-						//return (value / 100).toFixed(decimals);
-						var percentageNumber = parseFloat(value / 100);
-						return (isNaN(value)) ? value : percentageNumber;
-					} else {
-						return value;
-					}
-				});
+					ngModel.$parsers.push(function(value) {
+						if ($scope.schema.Percentage && value !== void 0) {
+							// If decimals is set to 'Auto', use 2 decimals for percentage values.
+							//var decimals = isNaN($scope.schema.Decimals) ? 2 : $scope.schema.Decimals;
+							//return (value / 100).toFixed(decimals);
+							var percentageNumber = parseFloat(value / 100);
+							return (isNaN(value)) ? value : percentageNumber;
+						} else {
+							return value;
+						}
+					});
 
-			} // link
+				} // link
 
 		}; // Directive definition object
 
@@ -147,4 +151,4 @@ angular.module('ngSharePoint').directive('spPercentage',
 
 	} // Directive factory
 
-]);
+})();

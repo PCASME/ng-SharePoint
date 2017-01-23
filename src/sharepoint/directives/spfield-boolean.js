@@ -14,10 +14,16 @@
 //	SPFieldBoolean
 ///////////////////////////////////////
 
-angular.module('ngSharePoint').directive('spfieldBoolean',
+;(function() {
 
-	['SPFieldDirective',
+	angular
+		.module('ngSharePoint')
+		.directive('spfieldBoolean', spfieldBoolean_DirectiveFactory);
 
+	spfieldBoolean_DirectiveFactory.$inject = ['SPFieldDirective'];
+
+
+    /* @ngInject */
 	function spfieldBoolean_DirectiveFactory(SPFieldDirective) {
 
 		var spfieldBoolean_DirectiveDefinitionObject = {
@@ -34,41 +40,41 @@ angular.module('ngSharePoint').directive('spfieldBoolean',
 			link: function($scope, $element, $attrs, controllers) {
 
 
-				var directive = {
+					var directive = {
 
-					fieldTypeName: 'boolean',
-					replaceAll: false,
+						fieldTypeName: 'boolean',
+						replaceAll: false,
 
-					renderFn: function() {
+						renderFn: function() {
 
-						$scope.value = $scope.modelCtrl.$viewValue;
-						$scope.displayValue = $scope.modelCtrl.$viewValue ? STSHtmlEncode(Strings.STS.L_SPYes) : STSHtmlEncode(Strings.STS.L_SPNo);
-					},
+							$scope.value = $scope.modelCtrl.$viewValue;
+							$scope.displayValue = $scope.modelCtrl.$viewValue ? STSHtmlEncode(Strings.STS.L_SPYes) : STSHtmlEncode(Strings.STS.L_SPNo);
+						},
 
-					formatterFn: function(modelValue) {
+						formatterFn: function(modelValue) {
 
-						$scope.formCtrl.fieldValueChanged($scope.schema.InternalName, modelValue, $scope.lastValue);
-						$scope.lastValue = modelValue;
+							$scope.formCtrl.fieldValueChanged($scope.schema.InternalName, modelValue, $scope.lastValue);
+							$scope.lastValue = modelValue;
 
-                        return modelValue;
-                    },
+							return modelValue;
+						},
 
-					parserFn: function(viewValue) {
+						parserFn: function(viewValue) {
 
-						if ($scope.lastValue !== $scope.value) {
-							// Calls the 'fieldValueChanged' method in the SPForm controller to broadcast to all child elements.
-							$scope.formCtrl.fieldValueChanged($scope.schema.InternalName, viewValue, $scope.lastValue);
-							$scope.lastValue = viewValue;
+							if ($scope.lastValue !== $scope.value) {
+								// Calls the 'fieldValueChanged' method in the SPForm controller to broadcast to all child elements.
+								$scope.formCtrl.fieldValueChanged($scope.schema.InternalName, viewValue, $scope.lastValue);
+								$scope.lastValue = viewValue;
+							}
+
+							return viewValue;
 						}
-
-						return viewValue;
-					}
-				};
+					};
 
 
-				SPFieldDirective.baseLinkFn.apply(directive, arguments);
+					SPFieldDirective.baseLinkFn.apply(directive, arguments);
 
-			} // link
+				} // link
 
 		}; // Directive definition object
 
@@ -77,4 +83,4 @@ angular.module('ngSharePoint').directive('spfieldBoolean',
 
 	} // Directive factory
 
-]);
+})();

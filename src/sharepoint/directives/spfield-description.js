@@ -14,10 +14,16 @@
 //	SPFieldDescription
 ///////////////////////////////////////
 
-angular.module('ngSharePoint').directive('spfieldDescription', 
+;(function() {
 
-	[
+	angular
+		.module('ngSharePoint')
+		.directive('spfieldDescription', spfieldDescription_DirectiveFactory);
 
+	spfieldDescription_DirectiveFactory.$inject = [];
+
+
+    /* @ngInject */
 	function spfieldDescription_DirectiveFactory() {
 
 		var spfieldDescription_DirectiveDefinitionObject = {
@@ -34,30 +40,30 @@ angular.module('ngSharePoint').directive('spfieldDescription',
 
 			link: function($scope, $element, $attrs, spformController) {
 
-				if (spformController === null) return;
-				
-				$scope.schema = spformController.getFieldSchema($attrs.name);
+					if (spformController === null) return;
 
-				// ****************************************************************************
-				// Watch for form mode changes.
-				//
-				$scope.$watch(function() {
+					$scope.schema = spformController.getFieldSchema($attrs.name);
 
-					return $scope.mode || spformController.getFormMode();
+					// ****************************************************************************
+					// Watch for form mode changes.
+					//
+					$scope.$watch(function() {
 
-				}, function(newValue) {
+						return $scope.mode || spformController.getFormMode();
 
-					$scope.currentMode = newValue;
+					}, function(newValue) {
 
-				});
+						$scope.currentMode = newValue;
 
-			} // link
+					});
+
+				} // link
 
 		}; // Directive definition object
 
 
 		return spfieldDescription_DirectiveDefinitionObject;
-		
+
 	} // Directive factory
 
-]);
+})();
