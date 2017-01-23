@@ -11,8 +11,8 @@
  */
 
 
-(function() {
-    
+(function () {
+
     'use strict';
 
     angular
@@ -35,26 +35,29 @@
 
         var spRibbonService = {
 
-            instance                    : null,
-            getInstance                 : getInstance,
-            ready                       : ready,
-            refresh                     : refresh,
-            addTab                      : addTab,
-            getTab                      : getTab,
-            getEditTab                  : getEditTab,
-            getDefaultTab               : getDefaultTab,
-            addGroupToTab               : addGroupToTab,
-            addLayoutToGroup            : addLayoutToGroup,
-            addSectionToLayout          : addSectionToLayout,
-            addButtonToSection          : addButtonToSection,
-            showEditingTools            : showEditingTools,
-            executeCommand              : executeCommand,
-            registerComponentCommands   : registerComponentCommands,
-            unregisterComponentCommands : unregisterComponentCommands,
-            getStructure                : getStructure,
-            createToolbar               : createToolbar,
-            addButtonToToolbar          : addButtonToToolbar,
-            registerCommand             : registerCommand
+            instance: null,
+            pageManager: null,
+            commandDispatcher: null,
+            getInstance: getInstance,
+            ready: ready,
+            refresh: refresh,
+            addTab: addTab,
+            getTab: getTab,
+            getEditTab: getEditTab,
+            getDefaultTab: getDefaultTab,
+            addGroupToTab: addGroupToTab,
+            addLayoutToGroup: addLayoutToGroup,
+            addSectionToLayout: addSectionToLayout,
+            addButtonToSection: addButtonToSection,
+            showEditingTools: showEditingTools,
+            executeCommand: executeCommand,
+            registerComponentCommands: registerComponentCommands,
+            unregisterComponentCommands: unregisterComponentCommands,
+            getStructure: getStructure,
+            createToolbar: createToolbar,
+            addButtonToToolbar: addButtonToToolbar,
+            registerCommand: registerCommand,
+            removeCommand: removeCommand
 
         };
 
@@ -73,8 +76,10 @@
             commandDispatcher = pageManager.get_commandDispatcher();
 
             spRibbonService.instance = ribbon;
+            spRibbonService.pageManager = pageManager;
+            spRibbonService.commandDispatcher = commandDispatcher;
+
             ribbonReady = true;
-            
             ribbonDeferred.resolve();
 
         } // onRibbonInited
@@ -139,7 +144,7 @@
 
         function refresh() {
 
-            ready().then(function() {
+            ready().then(function () {
 
                 ribbon.refresh();
 
@@ -421,7 +426,7 @@
                 var enumerator = items.getEnumerator();
 
                 while (enumerator.moveNext()) {
-                    
+
                     var item = enumerator.get_current();
 
                     // TODO: Si el item es un 'CUI_Tab', acceder al tab para inicializarlo antes de obtener su estructura.
@@ -548,6 +553,36 @@
 
 
 
+        function removeCommand(componentId, commands) {
+
+            //var cmds = [].concat(commands).filter(Boolean);
+            var cmds = _validateCommands(commands);
+            var component = pageManager.getPageComponentById(componentId);
+
+            if (component && cmds) {
+
+                cmds.forEach(function (commandId) {
+
+                    if (Array.contains(component.getCommands(), commandId)) {
+
+                        // Hard hack to remove the command from the component.
+                        delete component._controlData[commandId];
+                        ribbon.refresh();
+
+                    }
+
+                });
+
+                return true;
+
+            }
+
+            return false;
+
+        } // removeCommand
+
+
+
         function registerPageComponent() {
 
             /**
@@ -561,14 +596,14 @@
 
 
             // Initialize the 'ngSharePointPageComponent' members
-            ngSharePointPageComponent = function() {
+            ngSharePointPageComponent = function () {
 
                 ngSharePointPageComponent.initializeBase(this);
 
             };
 
 
-            ngSharePointPageComponent.initializePageComponent = function() {
+            ngSharePointPageComponent.initializePageComponent = function () {
 
                 var instance = ngSharePointPageComponent.get_instance();
 
@@ -579,7 +614,7 @@
             };
 
 
-            ngSharePointPageComponent.get_instance = function() {
+            ngSharePointPageComponent.get_instance = function () {
 
                 if (!angular.isDefined(ngSharePointPageComponent.instance)) {
 
@@ -595,7 +630,7 @@
             ngSharePointPageComponent.prototype = {
 
                 // Create an array of handled commands with handler methods
-                init: function() {
+                init: function () {
 
                     /**
                      * The SP.Ribbon.PageState.PageStateHandler.init() Method initializes the page component. 
@@ -609,7 +644,7 @@
                 },
 
 
-                getGlobalCommands: function() {
+                getGlobalCommands: function () {
 
                     /**
                      * The SP.Ribbon.PageState.PageStateHandler.getGlobalCommands() Method returns a string array with the names of the global commands. 
@@ -621,7 +656,7 @@
                 },
 
 
-                getFocusedCommands: function() {
+                getFocusedCommands: function () {
 
                     /**
                      * The SP.Ribbon.PageState.PageStateHandler.getFocusedCommands() Method returns a string array with the names of the focused commands. 
@@ -633,7 +668,7 @@
                 },
 
 
-                handleCommand: function(commandId, properties, sequence) {
+                handleCommand: function (commandId, properties, sequence) {
 
                     /**
                      * The SP.Ribbon.PageState.PageStateHandler.handleCommand(commandId, properties, sequence) Method is used to handle a command that is passed to the page component. 
@@ -645,7 +680,7 @@
                 },
 
 
-                canHandleCommand: function(commandId) {
+                canHandleCommand: function (commandId) {
 
                     /**
                      * The SP.Ribbon.PageState.PageStateHandler.canHandleCommand(commandId) Method returns a Boolean that indicates whether the page 
@@ -665,7 +700,7 @@
                 },
 
 
-                isFocusable: function() {
+                isFocusable: function () {
 
                     /**
                      * The SP.Ribbon.PageState.PageStateHandler.isFocusable() Method returns a Boolean that indicates whether the page component can receive the focus. 
@@ -676,18 +711,18 @@
                 },
 
 
-                receiveFocus: function() {
+                receiveFocus: function () {
 
                     /**
                      * The SP.Ribbon.PageState.PageStateHandler.receiveFocus() Method is used when the page component receives focus.
                      * (Optional Page Component Method)
-                     */ 
+                     */
                     return true;
 
                 },
 
 
-                yieldFocus: function() {
+                yieldFocus: function () {
 
                     /**
                      * The SP.Ribbon.PageState.PageStateHandler.yieldFocus() Method is called when the page component loses focus.
@@ -698,14 +733,14 @@
                 },
 
 
-                getId: function() {
+                getId: function () {
 
                     return 'ngSharePointPageComponent';
 
                 },
 
 
-                addCommand: function(commandId, handlerFn, canHandle) {
+                addCommand: function (commandId, handlerFn, canHandle) {
 
                     if (!CUI.ScriptUtility.isNullOrUndefined(commandId) && !CUI.ScriptUtility.isNullOrUndefined(handlerFn) && !Array.contains(this._commands, commandId)) {
 
@@ -734,15 +769,15 @@
             unregisterComponentCommands('WebPartWPQ2', 'Ribbon.ListForm.Edit.Commit.Cancel');
             unregisterComponentCommands('WebPartWPQ2', 'Ribbon.ListForm.Edit.Actions.AttachFile');
 
-            // NOTE: The 'pageManager.$2o_1' property is an object that contains all the components 
-            //       by name and we could try to get the correct component id from it but we can't 
-            //       ensure that this property ($2o_1) always will have this name.
-            //
-
             // Unregister the commands for SharePoint 2013 FOUNDATION !?
             unregisterComponentCommands('WebPartWPQ1', 'Ribbon.ListForm.Edit.Commit.Publish');
             unregisterComponentCommands('WebPartWPQ1', 'Ribbon.ListForm.Edit.Commit.Cancel');
             unregisterComponentCommands('WebPartWPQ1', 'Ribbon.ListForm.Edit.Actions.AttachFile');
+
+            // NOTE: The 'pageManager.$2o_1' property is an object that contains all the components 
+            //       by name and we could try to get the correct component id (WebPartWPQ?) from it but we can't 
+            //       ensure that this property ($2o_1) always will have this name.
+            //
 
 
             // Register classes and initialize page component
