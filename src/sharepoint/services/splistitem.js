@@ -890,6 +890,7 @@
                     var fieldType = field.originalTypeAsString || field.TypeAsString;
                     // var fieldName = field.InternalName;
                     var fieldName = field.EntityPropertyName;
+                    
                     if (fieldType == 'Lookup' || fieldType == 'LookupMulti' || fieldType == 'User' || fieldType == 'UserMulti') {
                         fieldName = fieldName + 'Id';
                     }

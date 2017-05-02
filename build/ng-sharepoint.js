@@ -6856,6 +6856,7 @@
                     var fieldType = field.originalTypeAsString || field.TypeAsString;
                     // var fieldName = field.InternalName;
                     var fieldName = field.EntityPropertyName;
+                    
                     if (fieldType == 'Lookup' || fieldType == 'LookupMulti' || fieldType == 'User' || fieldType == 'UserMulti') {
                         fieldName = fieldName + 'Id';
                     }
@@ -7536,6 +7537,40 @@
 
             var controlProperties = new CUI.ControlProperties();
 
+            /*
+            https://msdn.microsoft.com/en-us/library/office/ff458366.aspx
+
+            <Button
+                 Alt="Text"
+                 Command="Text"
+                 CommandType="General | OptionSelect | IgnoredByMenu"
+                 CommandValueId="Text"
+                 Description="Text"
+                 Id="Text"
+                 Image32by32="Url"
+                 Image32by32Class="CSS Class Selector"
+                 Image32by32Left="Negative Integer"
+                 Image32by32Top="Negative Integer"
+                 Image16by16="Url"
+                 Image16by16Class="CSS Class Selector"
+                 Image16by16Left="Negative Integer"
+                 Image16by16Top="Negative Integer"
+                 LabelCss="Text"
+                 LabelText="Text"
+                 MenuItemId="Text"
+                 Sequence="Integer"
+                 TemplateAlias="Text"
+                 ToolTipImage32by32="Url"
+                 ToolTipImage32by32Class="Text"
+                 ToolTipImage32by32Left="Negative Integer"
+                 ToolTipImage32by32Top="Negative Integer"
+                 ToolTipTitle="Text"
+                 ToolTipDescription="Text"
+                 ToolTipHelpKeyWord="Text"
+                 ToolTipShortcutKey="Text"
+            />
+            */            
+
             controlProperties.Command = id;// + '.Command';
             controlProperties.Id = id + '.ControlProperties';
             controlProperties.TemplateAlias = 'o1';
@@ -7549,7 +7584,30 @@
                 See 'RibbonTemplates' at the end of the file 'CMDUI.XML' (<15_deep>\TEMPLATE\GLOBAL\CMDUI.XML).
                 Also see these recomendations: http://www.andrewconnell.com/blog/Always-Create-Your-Own-Group-Templates-with-SharePoint-Ribbon-Customizations
             */
-            controlProperties.Image32by32 = btnImage || '/_layouts/15/images/placeholder32x32.png';
+
+            // Sets the default values for the 32x32 image properties.
+            var imageProperties = {
+                Image32by32: (typeof btnImage == 'string' ? btnImage : void 0) || '/_layouts/15/images/placeholder32x32.png'
+            };
+
+            if (typeof btnImage == 'object') {
+
+                angular.extend(imageProperties,  btnImage);
+
+            }
+
+
+
+            controlProperties.Image32by32 = imageProperties.Image32by32;
+            controlProperties.Image32by32Class = imageProperties.Image32by32Class;
+            controlProperties.Image32by32Left = imageProperties.Image32by32Left;
+            controlProperties.Image32by32Top = imageProperties.Image32by32Top;
+
+            controlProperties.Image16by16 = imageProperties.Image16by16;
+            controlProperties.Image16by16Class = imageProperties.Image16by16Class;
+            controlProperties.Image16by16Left = imageProperties.Image16by16Left;
+            controlProperties.Image16by16Top = imageProperties.Image16by16Top;
+
             controlProperties.ToolTipTitle = tooltip || label;
             controlProperties.ToolTipDescription = description || tooltip || '';
             controlProperties.LabelText = label;
@@ -8024,6 +8082,36 @@
             };
 
 
+
+            // NOTE: The 'pageManager.$2o_1' property is an object that contains all the components 
+            //       by name and we could try to get the correct component id (WebPartWPQ?) from it but 
+            //       we can't ensure that this property ($2o_1) always will have this name.
+            //
+            var defaultPageComponentId = 'WebPartWPQ2';
+            var defaultPageComponentIdFoundation = 'WebPartWPQ1';
+
+            /* 
+                NOTE2: The page object '_spWebPartComponents' have all the components loaded in a web parts page (ListViewWebPart/ListFormWebPart).
+                       For non web part page this object is empty (have no properties/components).
+                       Use the next instruction to get the first one:
+            
+                            var pageComponentId = typeof _spWebPartComponents !== 'undefined' && (_spWebPartComponents[Object.keys(_spWebPartComponents)[0]] || { pageComponentId: 'WebPartWPQ2' }).pageComponentId;
+            
+                       Or the verbose solution:
+            
+                            // Gets the first property name from the object '_spWebPartComponents'.
+                            var firstObjectProperty = typeof _spWebPartComponents !== 'undefined' && Object.keys(_spWebPartComponents)[0];
+                            
+                            // Gets the value of the first property from the object '_spWebPartComponents' (the first component object).
+                            var component = _spWebPartComponents[firstObjectProperty];
+
+                            // Gets the 'pageComponentId' property from the component object.
+                            // If the property 'pageComponentId' doesn't exists in the object,
+                            // assumes the standard component id 'WebPartWPQ2'.
+                            var pageComponentId = component && component.pageComponentId || 'WebPartWPQ2';
+            */
+
+
             // Unregister the default 'save', 'cancel' and 'attach file' commands
             unregisterComponentCommands('WebPartWPQ2', 'Ribbon.ListForm.Edit.Commit.Publish');
             unregisterComponentCommands('WebPartWPQ2', 'Ribbon.ListForm.Edit.Commit.Cancel');
@@ -8033,11 +8121,6 @@
             unregisterComponentCommands('WebPartWPQ1', 'Ribbon.ListForm.Edit.Commit.Publish');
             unregisterComponentCommands('WebPartWPQ1', 'Ribbon.ListForm.Edit.Commit.Cancel');
             unregisterComponentCommands('WebPartWPQ1', 'Ribbon.ListForm.Edit.Actions.AttachFile');
-
-            // NOTE: The 'pageManager.$2o_1' property is an object that contains all the components 
-            //       by name and we could try to get the correct component id (WebPartWPQ?) from it but we can't 
-            //       ensure that this property ($2o_1) always will have this name.
-            //
 
 
             // Register classes and initialize page component
@@ -14398,10 +14481,9 @@
                             SharePointGroupID: $scope.schema.SelectionGroup,
                             PrincipalAccountType: 'User,DL,SecGroup,SPGroup',
                             SearchPrincipalSource: 15,
-                            ResolvePrincipalSource: 15
-                                /*,
-                                                        MaximumEntitySuggestions: 50,
-                                                        Width: '280px'*/
+                            ResolvePrincipalSource: 15,
+                            // MaximumEntitySuggestions: 50,
+                            // Width: '280px'
                         };
 
 

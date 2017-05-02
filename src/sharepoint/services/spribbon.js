@@ -276,6 +276,40 @@
 
             var controlProperties = new CUI.ControlProperties();
 
+            /*
+            https://msdn.microsoft.com/en-us/library/office/ff458366.aspx
+
+            <Button
+                 Alt="Text"
+                 Command="Text"
+                 CommandType="General | OptionSelect | IgnoredByMenu"
+                 CommandValueId="Text"
+                 Description="Text"
+                 Id="Text"
+                 Image32by32="Url"
+                 Image32by32Class="CSS Class Selector"
+                 Image32by32Left="Negative Integer"
+                 Image32by32Top="Negative Integer"
+                 Image16by16="Url"
+                 Image16by16Class="CSS Class Selector"
+                 Image16by16Left="Negative Integer"
+                 Image16by16Top="Negative Integer"
+                 LabelCss="Text"
+                 LabelText="Text"
+                 MenuItemId="Text"
+                 Sequence="Integer"
+                 TemplateAlias="Text"
+                 ToolTipImage32by32="Url"
+                 ToolTipImage32by32Class="Text"
+                 ToolTipImage32by32Left="Negative Integer"
+                 ToolTipImage32by32Top="Negative Integer"
+                 ToolTipTitle="Text"
+                 ToolTipDescription="Text"
+                 ToolTipHelpKeyWord="Text"
+                 ToolTipShortcutKey="Text"
+            />
+            */            
+
             controlProperties.Command = id;// + '.Command';
             controlProperties.Id = id + '.ControlProperties';
             controlProperties.TemplateAlias = 'o1';
@@ -289,7 +323,30 @@
                 See 'RibbonTemplates' at the end of the file 'CMDUI.XML' (<15_deep>\TEMPLATE\GLOBAL\CMDUI.XML).
                 Also see these recomendations: http://www.andrewconnell.com/blog/Always-Create-Your-Own-Group-Templates-with-SharePoint-Ribbon-Customizations
             */
-            controlProperties.Image32by32 = btnImage || '/_layouts/15/images/placeholder32x32.png';
+
+            // Sets the default values for the 32x32 image properties.
+            var imageProperties = {
+                Image32by32: (typeof btnImage == 'string' ? btnImage : void 0) || '/_layouts/15/images/placeholder32x32.png'
+            };
+
+            if (typeof btnImage == 'object') {
+
+                angular.extend(imageProperties,  btnImage);
+
+            }
+
+
+
+            controlProperties.Image32by32 = imageProperties.Image32by32;
+            controlProperties.Image32by32Class = imageProperties.Image32by32Class;
+            controlProperties.Image32by32Left = imageProperties.Image32by32Left;
+            controlProperties.Image32by32Top = imageProperties.Image32by32Top;
+
+            controlProperties.Image16by16 = imageProperties.Image16by16;
+            controlProperties.Image16by16Class = imageProperties.Image16by16Class;
+            controlProperties.Image16by16Left = imageProperties.Image16by16Left;
+            controlProperties.Image16by16Top = imageProperties.Image16by16Top;
+
             controlProperties.ToolTipTitle = tooltip || label;
             controlProperties.ToolTipDescription = description || tooltip || '';
             controlProperties.LabelText = label;

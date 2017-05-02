@@ -423,10 +423,9 @@
                             SharePointGroupID: $scope.schema.SelectionGroup,
                             PrincipalAccountType: 'User,DL,SecGroup,SPGroup',
                             SearchPrincipalSource: 15,
-                            ResolvePrincipalSource: 15
-                                /*,
-                                                        MaximumEntitySuggestions: 50,
-                                                        Width: '280px'*/
+                            ResolvePrincipalSource: 15,
+                            // MaximumEntitySuggestions: 50,
+                            // Width: '280px'
                         };
 
 
