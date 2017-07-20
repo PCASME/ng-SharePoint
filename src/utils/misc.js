@@ -331,7 +331,7 @@
 
 
 		/**
-		 * Extening object that entered in first argument.
+		 * Extending object that entered in first argument.
 		 * Returns extended object or false if have no target object or incorrect type.
 		 * If you wish to clone object, simply use that:
 		 *  deepExtend({}, yourObj_1, [yourObj_N]) - first arg is new empty object
