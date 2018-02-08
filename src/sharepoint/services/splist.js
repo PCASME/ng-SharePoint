@@ -1029,7 +1029,8 @@
                         items.push(spListItem);
                     });
 
-                    // If pagination is present, save for futher function calls
+                    // If pagination is present, save for futher function calls.
+                    // NOTE: 204 status code means NO CONTENT.
                     if (data.statusCode != 204 && data.body) {
 
                         var responseBody = angular.fromJson(data.body || '{ "d": {} }').d;

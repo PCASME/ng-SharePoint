@@ -941,7 +941,7 @@
                     headers['X-RequestDigest'] = requestDigest.value;
                 }
 
-                // If the item has 'Id', means that is not a new item, so set the call headers for make an update.
+                // If the item has 'Id', means that is not a new item, so set the call headers to make an update.
                 if (!self.isNew()) {
 
                     // UPDATE
@@ -973,7 +973,7 @@
                          * file (by the FileLeafRef field), the .File property that
                          * points to the File object on the server, will have a bad 
                          * api url
-                         * This problem can solfe with a call to updateAPIUrlById method
+                         * This problem can solve with a call to updateAPIUrlById method
                          * that modifies the apiURL property correctly
 
                         if (self.File !== undefined) {

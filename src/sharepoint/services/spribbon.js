@@ -1,11 +1,9 @@
 /**
  * @ngdoc object
- * @name ngSharePoint.SPUtils
+ * @name ngSharePoint.SPRibbon
  *
  * @description
  * This factory provides functionality to manage ribbon (tabs, groups, buttons).
- *
- * *At the moment, not all SharePoint API methods for content type objects are implemented in ngSharePoint*
  *
  * *Documentation is pending*
  */
