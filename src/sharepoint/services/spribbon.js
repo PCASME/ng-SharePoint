@@ -89,9 +89,10 @@
             if (ribbonReady === true) {
 
                 ribbonDeferred.resolve();
+                return ribbonDeferred.promise;
 
             }
-
+            
             // Initialize ribbon
             SP.SOD.executeOrDelayUntilScriptLoaded(function () {
 
