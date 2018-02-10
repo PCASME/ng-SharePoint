@@ -331,7 +331,7 @@
 
 
 		/**
-		 * Extening object that entered in first argument.
+		 * Extending object that entered in first argument.
 		 * Returns extended object or false if have no target object or incorrect type.
 		 * If you wish to clone object, simply use that:
 		 *  deepExtend({}, yourObj_1, [yourObj_N]) - first arg is new empty object
@@ -5102,7 +5102,8 @@
                         items.push(spListItem);
                     });
 
-                    // If pagination is present, save for futher function calls
+                    // If pagination is present, save for futher function calls.
+                    // NOTE: 204 status code means NO CONTENT.
                     if (data.statusCode != 204 && data.body) {
 
                         var responseBody = angular.fromJson(data.body || '{ "d": {} }').d;
@@ -6907,7 +6908,7 @@
                     headers['X-RequestDigest'] = requestDigest.value;
                 }
 
-                // If the item has 'Id', means that is not a new item, so set the call headers for make an update.
+                // If the item has 'Id', means that is not a new item, so set the call headers to make an update.
                 if (!self.isNew()) {
 
                     // UPDATE
@@ -6939,7 +6940,7 @@
                          * file (by the FileLeafRef field), the .File property that
                          * points to the File object on the server, will have a bad 
                          * api url
-                         * This problem can solfe with a call to updateAPIUrlById method
+                         * This problem can solve with a call to updateAPIUrlById method
                          * that modifies the apiURL property correctly
 
                         if (self.File !== undefined) {
@@ -7261,12 +7262,10 @@
 })();
 /**
  * @ngdoc object
- * @name ngSharePoint.SPUtils
+ * @name ngSharePoint.SPRibbon
  *
  * @description
  * This factory provides functionality to manage ribbon (tabs, groups, buttons).
- *
- * *At the moment, not all SharePoint API methods for content type objects are implemented in ngSharePoint*
  *
  * *Documentation is pending*
  */
@@ -7352,9 +7351,10 @@
             if (ribbonReady === true) {
 
                 ribbonDeferred.resolve();
+                return ribbonDeferred.promise;
 
             }
-
+            
             // Initialize ribbon
             SP.SOD.executeOrDelayUntilScriptLoaded(function () {
 
@@ -11188,7 +11188,7 @@
 //  SPFieldControl
 ///////////////////////////////////////
 
-;(function() {
+; (function () {
 
     angular
         .module('ngSharePoint')
@@ -11208,165 +11208,165 @@
             templateUrl: 'templates/form-templates/spfield-control.html',
 
 
-            link: function($scope, $element, $attrs, spformController) {
+            link: function ($scope, $element, $attrs, spformController) {
 
-                    if (spformController === null) return;
+                if (spformController === null) return;
 
-                    var name = ($attrs.name || $attrs.spfieldControl);
-                    var schema = spformController.getFieldSchema(name);
+                var name = ($attrs.name || $attrs.spfieldControl);
+                var schema = spformController.getFieldSchema(name);
 
-                    if (schema !== void 0) {
+                if (schema !== void 0) {
 
-                        // Checks if attachments are enabled in the list when process the 'Attachments' field.
-                        if (name === 'Attachments') {
+                    // Checks if attachments are enabled in the list when process the 'Attachments' field.
+                    if (name === 'Attachments') {
 
-                            var item = spformController.getItem();
+                        var item = spformController.getItem();
 
-                            if (item !== void 0 && item.list !== void 0 && item.list.EnableAttachments === false) {
+                        if (item !== void 0 && item.list !== void 0 && item.list.EnableAttachments === false) {
 
-                                console.error('Can\'t add "Attachments" field because the attachments are disabled in the list.');
-                                setEmptyElement();
-                                return;
+                            console.error('Can\'t add "Attachments" field because the attachments are disabled in the list.');
+                            setEmptyElement();
+                            return;
+
+                        }
+
+                    }
+
+
+                    // Sets the default value for the field
+                    spformController.initField(schema.EntityPropertyName).then(function () {
+
+                        // NOTE: Include a <spfield-control name="<name_of_the_field>" mode="hidden" /> to initialize
+                        //       the field with it's default value, but without showing it up in the form.
+                        if ($attrs.mode == 'hidden') {
+                            $element.addClass('ng-hide');
+                            return;
+                        }
+
+                        // Gets the field type
+                        var fieldType = schema.originalTypeAsString;
+                        if (fieldType === 'UserMulti') fieldType = 'User';
+
+                        // Gets the field name
+                        var fieldName = schema.EntityPropertyName + (fieldType == 'Lookup' || fieldType == 'LookupMulti' || fieldType == 'User' || fieldType == 'UserMulti' ? 'Id' : '');
+
+                        fieldType = schema.TypeAsString;
+                        if (fieldType === 'UserMulti') fieldType = 'User';
+
+                        // Adjust the field name if necessary.
+                        // This is for additional read-only fields attached to Lookup and LookupMulti field types.
+                        // Also, for this read-only fields, sets always the form mode to display.
+                        if ((fieldType == 'Lookup' || fieldType == 'LookupMulti') && schema.PrimaryFieldId !== null) {
+
+                            var primaryFieldSchema = spformController.getFieldSchema(schema.PrimaryFieldId);
+
+                            if (primaryFieldSchema !== void 0) {
+                                fieldName = primaryFieldSchema.InternalName + 'Id';
+                                $attrs.mode = 'display';
+                            }
+                        }
+
+
+                        // Check for 'require' attribute (Force required)
+                        if ($attrs.required) {
+                            schema.Required = $attrs.required == 'true';
+                        }
+
+
+                        // Mount field attributes
+                        var ngModelAttr = ' ng-model="item.' + fieldName + '"';
+                        var nameAttr = ' name="' + name + '"';
+                        var modeAttr = ($attrs.mode ? ' mode="' + $attrs.mode + '"' : '');
+                        var dependsOnAttr = ($attrs.dependsOn ? ' depends-on="' + $attrs.dependsOn + '"' : '');
+                        var hiddenAttr = ($attrs.mode == 'hidden' ? ' ng-hide="true"' : '');
+                        //var validationAttributes = (angular.isDefined($attrs.required) ? ' ng-required="' + schema.Required + '"' : '');
+
+                        var validationAttributes = '';
+                        if (getFieldMode() == 'edit') {
+                            validationAttributes = ' ng-required="' + schema.Required + '"';
+                        }
+
+
+                        // Specific field type validation attributes
+                        switch (schema.TypeAsString) {
+
+                            case 'Text':
+                            case 'Note':
+                                validationAttributes += ' ng-maxlength="' + schema.MaxLength + '"';
+                                break;
+                        }
+
+
+                        // Check for 'render-as' attribute
+                        if (schema.RenderAs !== undefined) {
+                            fieldType = schema.RenderAs;
+                        }
+                        if ($attrs.renderAs) {
+                            fieldType = $attrs.renderAs;
+                        }
+
+
+                        // Process other attributes
+                        var otherAttributes = '';
+                        var processedAttributes = ['name', 'mode', 'required', 'dependsOn', 'renderAs'];
+                        angular.forEach($attrs.$attr, function (attr, normalizedAttr) {
+
+                            if (processedAttributes.indexOf(normalizedAttr) == -1) {
+
+                                otherAttributes += ' ' + attr + '="' + $attrs[normalizedAttr] + '"';
 
                             }
+
+                        });
+
+
+                        // Clean up the validation attributes if the field is in 'display' mode.
+                        if ($attrs.mode === 'display') {
+
+                            validationAttributes = '';
 
                         }
 
 
-                        // Sets the default value for the field
-                        spformController.initField(schema.EntityPropertyName).then(function() {
+                        // Mount the field directive HTML
+                        var fieldControlHTML = '<spfield-' + fieldType + ngModelAttr + nameAttr + modeAttr + dependsOnAttr + hiddenAttr + validationAttributes + otherAttributes + ' class="spfield-body-control ' + fieldType + '"></spfield-' + fieldType + '>';
+                        var newElement = $compile(fieldControlHTML)($scope);
 
-                            // NOTE: Include a <spfield-control name="<name_of_the_field>" mode="hidden" /> to initialize
-                            //       the field with it's default value, but without showing it up in the form.
-                            if ($attrs.mode == 'hidden') {
-                                $element.addClass('ng-hide');
-                                return;
-                            }
+                        $element.replaceWith(newElement);
+                        $element = newElement;
 
-                            // Gets the field type
-                            var fieldType = schema.originalTypeAsString;
-                            if (fieldType === 'UserMulti') fieldType = 'User';
+                    }); // initField
 
-                            // Gets the field name
-                            var fieldName = schema.EntityPropertyName + (fieldType == 'Lookup' || fieldType == 'LookupMulti' || fieldType == 'User' || fieldType == 'UserMulti' ? 'Id' : '');
+                } else {
 
-                            fieldType = schema.TypeAsString;
-                            if (fieldType === 'UserMulti') fieldType = 'User';
+                    console.error('Unknown field "' + $attrs.name + '"');
 
-                            // Adjust the field name if necessary.
-                            // This is for additional read-only fields attached to Lookup and LookupMulti field types.
-                            // Also, for this read-only fields, sets always the form mode to display.
-                            if ((fieldType == 'Lookup' || fieldType == 'LookupMulti') && schema.PrimaryFieldId !== null) {
+                    /*
+                    var errorElement = '<span class="ms-formvalidation ms-csrformvalidation">Unknown field "' + $attrs.name + '"</span>';
+                    $element.replaceWith(errorElement);
+                    $element = errorElement;
+                    */
 
-                                var primaryFieldSchema = spformController.getFieldSchema(schema.PrimaryFieldId);
+                    setEmptyElement();
 
-                                if (primaryFieldSchema !== void 0) {
-                                    fieldName = primaryFieldSchema.InternalName + 'Id';
-                                    $attrs.mode = 'display';
-                                }
-                            }
+                }
 
 
-                            // Check for 'require' attribute (Force required)
-                            if ($attrs.required) {
-                                schema.Required = $attrs.required == 'true';
-                            }
+                function getFieldMode() {
+
+                    return $attrs.mode || spformController.getFormMode();
+                }
+
+                function setEmptyElement() {
+
+                    var emptyElement = '';
+                    $element.replaceWith(emptyElement);
+                    $element = emptyElement;
+
+                }
 
 
-                            // Mount field attributes
-                            var ngModelAttr = ' ng-model="item.' + fieldName + '"';
-                            var nameAttr = ' name="' + name + '"';
-                            var modeAttr = ($attrs.mode ? ' mode="' + $attrs.mode + '"' : '');
-                            var dependsOnAttr = ($attrs.dependsOn ? ' depends-on="' + $attrs.dependsOn + '"' : '');
-                            var hiddenAttr = ($attrs.mode == 'hidden' ? ' ng-hide="true"' : '');
-                            //var validationAttributes = (angular.isDefined($attrs.required) ? ' ng-required="' + schema.Required + '"' : '');
-
-                            var validationAttributes = '';
-                            if (getFieldMode() == 'edit') {
-                                validationAttributes = ' ng-required="' + schema.Required + '"';
-                            }
-
-
-                            // Specific field type validation attributes
-                            switch (schema.TypeAsString) {
-
-                                case 'Text':
-                                case 'Note':
-                                    validationAttributes += ' ng-maxlength="' + schema.MaxLength + '"';
-                                    break;
-                            }
-
-
-                            // Check for 'render-as' attribute
-                            if (schema.RenderAs !== undefined) {
-                                fieldType = schema.RenderAs;
-                            }
-                            if ($attrs.renderAs) {
-                                fieldType = $attrs.renderAs;
-                            }
-
-
-                            // Process other attributes
-                            var otherAttributes = '';
-                            var processedAttributes = ['name', 'mode', 'required', 'dependsOn', 'renderAs'];
-                            angular.forEach($attrs.$attr, function(attr, normalizedAttr) {
-
-                                if (processedAttributes.indexOf(normalizedAttr) == -1) {
-
-                                    otherAttributes += ' ' + attr + '="' + $attrs[normalizedAttr] + '"';
-
-                                }
-
-                            });
-
-
-                            // Clean up the validation attributes if the field is in 'display' mode.
-                            if ($attrs.mode === 'display') {
-
-                                validationAttributes = '';
-
-                            }
-
-
-                            // Mount the field directive HTML
-                            var fieldControlHTML = '<spfield-' + fieldType + ngModelAttr + nameAttr + modeAttr + dependsOnAttr + hiddenAttr + validationAttributes + otherAttributes + ' class="spfield-body-control ' + fieldType + '"></spfield-' + fieldType + '>';
-                            var newElement = $compile(fieldControlHTML)($scope);
-
-                            $element.replaceWith(newElement);
-                            $element = newElement;
-
-                        }); // initField
-
-                    } else {
-
-                        console.error('Unknown field "' + $attrs.name + '"');
-
-                        /*
-                        var errorElement = '<span class="ms-formvalidation ms-csrformvalidation">Unknown field "' + $attrs.name + '"</span>';
-                        $element.replaceWith(errorElement);
-                        $element = errorElement;
-                        */
-
-                        setEmptyElement();
-
-                    }
-
-
-                    function getFieldMode() {
-
-                        return $attrs.mode || spformController.getFormMode();
-                    }
-
-                    function setEmptyElement() {
-
-                        var emptyElement = '';
-                        $element.replaceWith(emptyElement);
-                        $element = emptyElement;
-
-                    }
-
-
-                } // link
+            } // link
 
         }; // Directive definition object
 
